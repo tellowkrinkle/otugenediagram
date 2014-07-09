@@ -1,6 +1,6 @@
 <?php
 $unsafe=$_GET["q"];
-$name= mysql_real_escape_string($unsafe);
+$name= $unsafe;
 $sub=$_GET["s"];
 $pval=$_GET["p"];
 
