@@ -1,0 +1,257 @@
+<!--<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  -->
+<html >
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="d3.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="showgene2.js"></script>
+
+<style>
+body{
+background-color: black;
+}
+
+#header {
+ width: 700px ;
+ margin-left: auto ;
+ margin-right: auto ;
+  }
+#sidebar {
+ float: right;
+ }
+ 
+#buttons {
+ position: fixed;
+    top: 300px;
+    right: 250px;
+ }
+ 
+#svgdataurl { 
+ width: 840px ;
+ margin-left: auto ;
+ margin-right: auto ;
+ }
+ h2 {
+ color: #fff;
+ position: absolute;
+	left: 350px;
+	top: -10px;
+ }
+
+ img {
+ border-style: ridge;
+ border-color: #fff;
+ }
+</style>
+<script type="text/javascript">
+
+</script>
+</head>
+ 
+<body>
+
+
+			
+				<!----- Search functionality  ----->				
+				
+				
+				<div id="header">
+				<br><br><br><br><br><br><br><br>
+				<input type="text" size="50" name="gene" value="Search" id="gene" autocomplete="off" />
+				<select name="subsite" id="subsite" >
+					<option value="'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'">Any Body Site</option>
+					<option value="'anterior_nares'">Anterior Nares</option>
+					<option value="'attached_keratinized_gingiva'">Attached Keratinized Gingiva</option>
+					<option value="'buccal_mucosa'">Buccal Mucosa</option>
+					<option value="'hard_palate'">Hard Palate</option>
+					<option value="'left_antecubital_fossa'">Left Antecubital Fossa</option>
+					<option value="'left_retroauricular_crease'">Left Retroauricular Crease</option>
+					<option value="'Palatine_Tonsils'">Palatine Tonsils</option>
+					<option value="'right_antecubital_fossa'">Right Antecubital Fossa</option>
+					<option value="'right_retroauricular_crease'">Right Retroauricular Crease</option>
+					<option value="'saliva'">Saliva</option>
+					<option value="'stool'">Stool</option>
+					<option value="'subgingival_plaque'">Subgingival Plaque</option>
+					<option value="'supragingival_plaque'">Supragingival Plaque</option>
+					<option value="'Throat'">Throat</option>
+					<option value="'tongue_dorsum'">Tongue Dorsum</option></select>
+				<select name="P-value" id="P-value">
+					<option value=".0001">&#60 1x10<sup>-4</sup></option> 
+					<option value=".00001">&#60 1x10<sup>-5</sup></option> 
+					<option value=".000001">&#60 1x10<sup>-6</sup></option></select> 		
+				<input type="button" name="search" value="Search" onclick="showGene('')" />		
+				</div>
+				<div id="sidebar" style="display:none">
+		<br><br><br>
+				<h3 style="color:#fff;font-family:sans-serif;">Gene Search</h3>
+				<input type="text" size="50" name="gene" value="Search" id="gene2" autocomplete="off" /> <br>
+				<div id="subsite2" class="subsite2"><h3 style="color:#fff;font-family:sans-serif;">Body Site</h3>
+				<table>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#fff"><input name="subsite2[]" type="checkbox" selected="selected" value="'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'">All Body Sites</option>
+					<td style="font-size:14px;font-family:sans-serif;color:#71c9AC"><input name="subsite2[]" type="checkbox" value="'anterior_nares'">Anterior Nares</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#FE8D5C"><input name="subsite2[]" type="checkbox"  value="'attached_keratinized_gingiva'">Attached Keratinized Gingiva</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#8C9FCD"><input name="subsite2[]" type="checkbox"  value="'buccal_mucosa'">Buccal Mucosa</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#F5C9E4"><input name="subsite2[]" type="checkbox"  value="'hard_palate'">Hard Palate</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#A5DA4A"><input name="subsite2[]" type="checkbox"  value="'left_antecubital_fossa'">Left Antecubital Fossa</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#E6C591"><input name="subsite2[]" type="checkbox"  value="'left_retroauricular_crease'">Left Retroauricular Crease</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#B3B3B3"><input name="subsite2[]" type="checkbox"  value="'Palatine_Tonsils'">Palatine Tonsils</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#B1E086"><input name="subsite2[]" type="checkbox"  value="'right_retroauricular_crease'">Right Retroauricular Crease</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#A5CEE4"><input name="subsite2[]" type="checkbox"  value="'right_antecubital_fossa'">Right Antecubital Fossa</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#F681C2"><input name="subsite2[]" type="checkbox"  value="'saliva'">Saliva</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#FEC068"><input name="subsite2[]" type="checkbox"  value="'stool'">Stool</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#CAB1D7"><input name="subsite2[]" type="checkbox"  value="'subgingival_plaque'">Subgingival Plaque</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#B3591F"><input name="subsite2[]" type="checkbox"  value="'supragingival_plaque'">Supragingival Plaque</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#BA55D3"><input name="subsite2[]" type="checkbox"  value="'Throat'">Throat</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#1F792A"><input name="subsite2[]" type="checkbox"  value="'tongue_dorsum'">Tongue Dorsum</input></td></tr></table></div>
+				<h3 style="color:#fff;font-family:sans-serif;">P-Value</h3>
+				<select name="P-value2" id="P-value2">
+					<option value=".0001">&#60 1x10<sup>-4</sup></option> 
+					<option value=".00001">&#60 1x10<sup>-5</sup></option> 
+					<option value=".000001">&#60 1x10<sup>-6</sup></option></select> 	
+				<br><br>	
+				<input type="button" name="search" value="Refresh Graph" onclick="showGene3('')" />		
+				<input type="button" value="Preview Image" id="save" name="save" />
+				</div>
+				
+<div id="autosuggest_results"></div>
+
+				
+	<div id="salvation"><svg id="chart" height="580" width="860" style="background-color:black" ><style>
+path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+circle {
+ <!--  fill: #ccc; -->
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+text {
+  fill: #fff;
+  font: 10px sans-serif;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+#Anterior_nares {
+  fill: #71c9AC;
+}
+
+.link.Anterior_nares {
+  stroke: #71c9AC;
+}
+#Attached_Keratinized_gingiva {
+  fill: #FE8D5C;
+}
+
+.link.Attached_Keratinized_gingiva {
+  stroke: #FE8D5C;
+}
+#Buccal_mucosa {
+  fill: #8C9FCD;
+}
+
+.link.Buccal_mucosa {
+  stroke: #8C9FCD;
+}
+#Hard_palate {
+  fill: #F5C9E4;
+}
+
+.link.Hard_palate {
+  stroke: #F5C9E4;
+}
+#Left_Antecubital_fossa {
+  fill: #A5DA4A;
+}
+
+.link.Left_Antecubital_fossa {
+  stroke: #A5DA4A;
+}
+#Left_Retroauricular_crease {
+  fill: #E6C591;
+}
+
+.link.Left_Retroauricular_crease  {
+  stroke: #E6C591;
+}
+#Palatine_Tonsils {
+  fill: #B3B3B3;
+}
+
+.link.Palatine_Tonsils {
+  stroke: #B3B3B3;
+}
+#Right_Antecubital_fossa {
+  fill: #A5CEE4;
+}
+
+.link.Right_Antecubital_fossa {
+  stroke:  #A5CEE4;
+}
+
+#Right_Retroauricular_crease {
+  fill: #B1E086;
+}
+
+.link.Right_Retroauricular_crease {
+  stroke: #B1E086;
+}
+#Saliva{
+  fill: #F681C2;
+}
+
+.link.Saliva {
+  stroke: #F681C2;
+}
+#Stool {
+  fill: #FEC068;
+}
+
+.link.Stool {
+  stroke: #FEC068;
+}
+
+#Subgingival_plaque {
+  fill: #CAB1D7;
+}
+
+.link.Subgingival_plaque {
+  stroke: #CAB1D7;
+}
+
+#Supragingival_plaque {
+  fill: #B3591F;
+}
+
+.link.Supragingival_plaque {
+  stroke: #B3591F;
+}
+
+#Throat{
+  fill: #BA55D3;
+}
+
+.link.Throat {
+  stroke: #BA55D3;
+}
+
+#Tongue_dorsum {
+  fill: #1F792A;
+}
+
+.link.Tongue_dorsum {
+  stroke: #1F792A;
+}
+
+ul {
+	list-style-type: none;
+}</style></svg></div>
+	<div id="svgdataurl" ></div>
+	<div id="buttons" style="display:none"></div>
+	
+</body>
+</html>
