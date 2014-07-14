@@ -57,7 +57,7 @@ background-color: black;
 				
 				<div id="header">
 				<br><br><br><br><br><br><br><br>
-				<input type="text" size="50" name="gene" value="Search" id="gene" autocomplete="off" />
+				<input type="text" size="50" name="gene" value="Search" id="gene" autocomplete="off" onkeyup="geneKeyUp(event)" onkeypress="geneKeyUp(event)" />
 				<select name="subsite" id="subsite" >
 					<option value="'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'">Any Body Site</option>
 					<option value="'anterior_nares'">Anterior Nares</option>
@@ -84,7 +84,7 @@ background-color: black;
 				<div id="sidebar" style="display:none">
 		<br><br><br>
 				<h3 style="color:#fff;font-family:sans-serif;">Gene Search</h3>
-				<input type="text" size="50" name="gene" value="Search" id="gene2" autocomplete="off" /> <br>
+				<input type="text" size="50" name="gene" value="Search" id="gene2" autocomplete="off"  onkeyup="geneKeyUp2(event)" onkeypress="geneKeyUp2(event)" /> <br>
 				<div id="subsite2" class="subsite2"><h3 style="color:#fff;font-family:sans-serif;">Body Site</h3>
 				<table>
 					<tr><td style="font-size:14px;font-family:sans-serif;color:#fff"><input name="subsite2[]" type="checkbox" selected="selected" value="'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'">All Body Sites</option>
@@ -110,17 +110,17 @@ background-color: black;
 					<option value=".000001">&#60 1x10<sup>-6</sup></option></select> 	
 				<br><br>	
 				<input type="button" name="search" value="Refresh Graph" onclick="showGene3('')" />		
-				<input type="button" value="Preview Image" id="save" name="save" />
+				<input type="button" value="Preview Static Image" id="save" name="save" />
 				</div>
 				
 <div id="autosuggest_results"></div>
 
 				
-	<div id="salvation"><svg id="chart" height="580" width="860" style="background-color:black" ><style>
+	<div id="salvation"><svg id="chart" height="580" width="860" style="background-color:black;display:none" ><style>
 path.link {
   fill: none;
   stroke: #666;
-  stroke-width: 1.5px;
+  stroke-width: 2.5px;
 }
 
 circle {
@@ -130,7 +130,7 @@ circle {
 }
 
 text {
-  fill: #fff;
+  fill: #ccc;
   font: 10px sans-serif;
   pointer-events: none;
   font-weight: bold;

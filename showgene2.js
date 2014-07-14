@@ -11,6 +11,7 @@ function showGene(str) {
 		sub = document.getElementById('subsite').value;	
 		pval = document.getElementById('P-value').value;
 		document.getElementById('gene2').value = str;
+		document.getElementById('chart').style.display = 'inline';
 		if(str == ""){
 			return;
 		}
@@ -32,6 +33,25 @@ function showGene(str) {
 	document.getElementById('sidebar').style.display = 'inline';
 	console.log('toggling');
 }
+
+function geneKeyUp(e) {
+//	alert("enter1");
+	var characterCode //literal character code will be stored in this variable
+	if(e && e.which){ //if which property of event object is supported (NN4)
+		e = e
+		characterCode = e.which //character code is contained in NN4's which property
+	}
+	else{
+		e = event
+		characterCode = e.keyCode //character code is contained in IE's keyCode property
+	}
+
+	if(characterCode == 13){ //if generated character code is equal to ascii 13 (if enter key)
+		showGene('');
+		console.log(Enterkey);
+		return false;
+	}
+	}
 
 function showGene3(str) {
 	if(str == ""){
@@ -61,6 +81,24 @@ function showGene3(str) {
 //	alert(str);
 }
 
+function geneKeyUp2(e) {
+//	alert("enter1");
+	var characterCode //literal character code will be stored in this variable
+	if(e && e.which){ //if which property of event object is supported (NN4)
+		e = e
+		characterCode = e.which //character code is contained in NN4's which property
+	}
+	else{
+		e = event
+		characterCode = e.keyCode //character code is contained in IE's keyCode property
+	}
+
+	if(characterCode == 13){ //if generated character code is equal to ascii 13 (if enter key)
+		showGene3('');
+		console.log(Enterkey);
+		return false;
+	}
+}
 function stateChanged() {
 	if (xmlhttp.readyState==4) {
 	//	document.getElementById("txtHint").innerHTML=xmlhttp.responseText;
@@ -133,7 +171,7 @@ function tick() {
     path.attr("d", function(d) {
         var dx = d.target.x - d.source.x,
             dy = d.target.y - d.source.y,
-            dr = (1000);
+            dr = (1500);
         return "M" + 
             d.source.x + "," + 
             d.source.y + "A" + 
@@ -171,15 +209,15 @@ d3.select("svg")
       .attr("title", "file.svg")
       .attr("href-lang", "image/svg+xml")
       .attr("href", "data:image/svg+xml;base64,\n"+btoa(html))
-	  .attr("download", "networkdiagram.png")
-      .html('<input type=button value="Download" />');
+	  .attr("download", "networkdiagram.svg")
+      .html('<input type=button value="Download Static Image" /><br>');
 document.getElementById('sidebar').style.display = 'none';	  
 document.getElementById('chart').style.display = 'none';
 document.getElementById('svgdataurl').style.display = 'inline';
 document.getElementById('buttons').style.display = 'inline';
   d3.select("#buttons").append("input")
       .attr("type", "button")
-      .attr("value", "Back")
+      .attr("value", "Back to Search")
 	  .attr("id", "back")
 	  ;	
 	d3.select("#back").on("click", function(){
