@@ -29,7 +29,7 @@ $in_clause2[] = "'".  mysql_real_escape_string($value2) . "'";
 $in_clause2 = join(',', $in_clause2);
 if ($otu == "") {
 	if ($name != "") {
-	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from small where Gene IN ($in_clause) and Subsite IN ($sub) and P < '$pval'";
+	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from short where Gene IN ($in_clause) and Subsite IN ($sub) and P < '$pval'";
 	$result= mysql_query($qstring) or die (mysql_error()); 
 	}
 	
