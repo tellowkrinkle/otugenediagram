@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Example of Fluid Layout with Twitter Bootstrap version 2.0 from w3resource.com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Example of Fluid Layout with Twitter Bootstrap version 2.0 from w3resource.com">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="bootstrap/bootstrap.css" rel="stylesheet">
+	<link href="bootstrap/example-fluid-layout.css" rel="stylesheet">
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+	<script type="text/javascript" src="d3.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="showgene2.js"></script>
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="twitter-bootstrap-v2/docs/examples/images/favicon.ico">
+    <link rel="apple-touch-icon" href="twitter-bootstrap-v2/docs/examples/images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="twitter-bootstrap-v2/docs/examples/images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="twitter-bootstrap-v2/docs/examples/images/apple-touch-icon-114x114.png">
+	<style> 
+	#myside {
+	width: 420px;
+	}
+	body {
+	background-color:  #A5CEE4;
+	}
+	#overlay {
+     visibility: hidden;
+     position: fixed;
+     left: 0;
+     top: 0;
+     width: 100%;
+     height: 100%;
+     text-align:center;
+     z-index: 200;
+    background-color: black;
+    opacity:1;
+}
+
+#overlay div {
+     width:780px;
+     margin: 100px auto;
+     background-color: #fff;
+     border:1px solid #000;
+     padding:15px;
+     text-align:center;
+}
+div#buttons {
+	width: 150px;
+	position: fixed;
+    top: 100px;
+    right: 100px;
+ }
+
+	</style>
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span3" id="myside">
+          <div class="well sidebar-nav">
+            <br>
+				<ul><li><h3 style="font-family:sans-serif;">Gene Search</h3><small><i>Type in a gene or a comma seperated list of genes with no spaces</i></small><br>
+				<input type="text" size="50" name="gene" id="gene2" autocomplete="off"  onkeyup="geneKeyUp2(event)" onkeypress="geneKeyUp2(event)" /> <br></li>
+				<li id="otusearch" style="display:none;"><h3 style="font-family:sans-serif;">OTU Search</h3><small><i>Click an OTU on the graph to add it to the search box</i></small><br>
+				<input type="text" size="50" name="otu" id="otu" autocomplete="off"   />
+				<!-- <h3 style="font-family:sans-serif;">OTU Search</h3><small><i>Type in an OTU or a comma seperated list of OTUs with no spaces</i></small><br><input type="text" size="50" name="otu"  id="otu" autocomplete="off"  onkeyup="geneKeyUp2(event)" onkeypress="geneKeyUp2(event)" /> <br></li> -->
+				<li><div id="subsite2" class="subsite2"><h3 style="font-family:sans-serif;">Body Site</h3>
+				<small><i>Select one or more Subsites to view correlations from certain body areas</i><br><input id="checkselect" type="button" onclick="selectall()" value="Select All" /><input id="checkselect" type="button" onclick="deselectall()" value="Deselect All " /></small>
+				<table>
+					<!-- <td style="font-size:14px;font-family:sans-serif;color:#fff"><input name="subsite2[]" type="checkbox" checked value="'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'">All Body Sites</option> -->
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#71c9AC"><input name="subsite2[]" id="'anterior_nares'" type="checkbox" value="'anterior_nares'">Anterior Nares</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#FE8D5C"><input name="subsite2[]" id="'attached_keratinized_gingiva'" type="checkbox"  value="'attached_keratinized_gingiva'">Attached Keratinized Gingiva</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#8C9FCD"><input name="subsite2[]" id="'buccal_mucosa'" type="checkbox"  value="'buccal_mucosa'">Buccal Mucosa</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#A5DA4A"><input name="subsite2[]" id="'left_antecubital_fossa'" type="checkbox"  value="'left_antecubital_fossa'">Left Antecubital Fossa</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#F5C9E4"><input name="subsite2[]" id="'hard_palate'" type="checkbox"  value="'hard_palate'">Hard Palate</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#E6C591"><input name="subsite2[]" id="'left_retroauricular_crease'" type="checkbox"  value="'left_retroauricular_crease'">Left Retroauricular Crease</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#B3B3B3"><input name="subsite2[]" id="'Palatine_Tonsils'" type="checkbox"  value="'Palatine_Tonsils'">Palatine Tonsils</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#B1E086"><input name="subsite2[]" id="'right_retroauricular_crease'" type="checkbox"  value="'right_retroauricular_crease'">Right Retroauricular Crease</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#F681C2"><input name="subsite2[]" id="'saliva'" type="checkbox"  value="'saliva'">Saliva</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#A5CEE4"><input name="subsite2[]" id="'right_antecubital_fossa'" type="checkbox"  value="'right_antecubital_fossa'">Right Antecubital Fossa</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#FEC068"><input name="subsite2[]" id="'stool'" type="checkbox"  value="'stool'">Stool</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#CAB1D7"><input name="subsite2[]" id="'subgingival_plaque'" type="checkbox"  value="'subgingival_plaque'">Subgingival Plaque</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#BA55D3"><input name="subsite2[]" id="'Throat'" type="checkbox"  value="'Throat'">Throat</input></td>
+					<td style="font-size:14px;font-family:sans-serif;color:#B3591F"><input name="subsite2[]" id="'supragingival_plaque'" type="checkbox"  value="'supragingival_plaque'">Supragingival Plaque</input></td></tr>
+					<tr><td style="font-size:14px;font-family:sans-serif;color:#1F792A"><input name="subsite2[]" id="'tongue_dorsum'" type="checkbox"  value="'tongue_dorsum'">Tongue Dorsum</input></td>
+					<td></td></tr></table></div>
+					</li>
+				<li><h3 style="font-family:sans-serif;">P-Value</h3>
+				<small><i>Select a maximum P-value for the correlations</i></small>
+				<select name="P-value2" id="P-value2">
+					<option value=".0001">&#60 1x10<sup>-4</sup></option> 
+					<option value=".00001">&#60 1x10<sup>-5</sup></option> 
+					<option value=".000001">&#60 1x10<sup>-6</sup></option></select> 	
+				<br><br></li>	
+				<input type="button" name="search" value="Refresh Graph" onclick="showGene3('')" />		
+				<input type="button" value="Preview Static Image" id="save" name="save" />
+          </div><!--/.well -->
+        </div><!--/span-->
+        <div class="span8">
+		 <h1>Insert Title Here</h1><br>
+          <div class="leaderboard" id="forcecontain" style="display:none;">
+			<div id="salvation"><svg id="chart" height="600" width="940" style="background-color:#fff;display:none;" ><style>
+path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 2px;
+}
+
+circle {
+ <!--  fill: #ccc; -->
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+text {
+  fill: #000;
+  font: 10px sans-serif;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+#Anterior_nares {
+  fill: #71c9AC;
+}
+
+.link.Anterior_nares {
+  stroke: #71c9AC;
+}
+#Attached_Keratinized_gingiva {
+  fill: #FE8D5C;
+}
+
+.link.Attached_Keratinized_gingiva {
+  stroke: #FE8D5C;
+}
+#Buccal_mucosa {
+  fill: #8C9FCD;
+}
+
+.link.Buccal_mucosa {
+  stroke: #8C9FCD;
+}
+#Hard_palate {
+  fill: #F5C9E4;
+}
+
+.link.Hard_palate {
+  stroke: #F5C9E4;
+}
+#Left_Antecubital_fossa {
+  fill: #A5DA4A;
+}
+
+.link.Left_Antecubital_fossa {
+  stroke: #A5DA4A;
+}
+#Left_Retroauricular_crease {
+  fill: #E6C591;
+}
+
+.link.Left_Retroauricular_crease  {
+  stroke: #E6C591;
+}
+#Palatine_Tonsils {
+  fill: #B3B3B3;
+}
+
+.link.Palatine_Tonsils {
+  stroke: #B3B3B3;
+}
+#Right_Antecubital_fossa {
+  fill: #A5CEE4;
+}
+
+.link.Right_Antecubital_fossa {
+  stroke:  #A5CEE4;
+}
+
+#Right_Retroauricular_crease {
+  fill: #B1E086;
+}
+
+.link.Right_Retroauricular_crease {
+  stroke: #B1E086;
+}
+#Saliva{
+  fill: #F681C2;
+}
+
+.link.Saliva {
+  stroke: #F681C2;
+}
+#Stool {
+  fill: #FEC068;
+}
+
+.link.Stool {
+  stroke: #FEC068;
+}
+
+#Subgingival_plaque {
+  fill: #CAB1D7;
+}
+
+.link.Subgingival_plaque {
+  stroke: #CAB1D7;
+}
+
+#Supragingival_plaque {
+  fill: #B3591F;
+}
+
+.link.Supragingival_plaque {
+  stroke: #B3591F;
+}
+
+#Throat{
+  fill: #BA55D3;
+}
+
+.link.Throat {
+  stroke: #BA55D3;
+}
+
+#Tongue_dorsum {
+  fill: #1F792A;
+}
+
+.link.Tongue_dorsum {
+  stroke: #1F792A;
+}
+
+ul {
+	list-style-type: none;
+}
+.nodegene {
+	font-size: 12px;
+	font-style: italic;
+	}
+	</style></svg></div>
+          </div>
+          <div class="row-fluid">
+            <div class="span12">
+			<br>
+              <h3>
+             Input a list of genes seperated by commas (no spaces) into the search bar. To filter by the body site use the check boxes. The color of the links between the OTUs and the genes are representative of the subsite where the correlation was found. If you want to filter by p-value, select a maximum from the drop down menu then hit refresh graph or your enter key. If any labels are illegible, grab the circle (node) and drag it toward an empty space. If you want to save the image the way that it is shown, hit the preview static image button. This will open a preview of the image and bring up the download button.
+           </h3> <br><br>
+		   <h4 style="text-align:center;">Basic example for if you don't know where to start</h4>
+		   <h4 style="text-align:center;">Example 1: <a href="#" onclick="fill('TP73,T,PLOD1,LRP8,MCTP2,CHIA,TPSG1,IMP3')" />TP73,T,PLOD1,LRP8,MCTP2,CHIA,TPSG1,IMP3 </a><br>Example 2: <a href="#" onclick="fill('SLAMF9,CD68,STAT3,SOD2,KLF2,PINK1,CSH2,GH1,RIC3')">SLAMF9,CD68,STAT3,SOD2,KLF2,PINK1,CSH2,GH1,RIC3</a></div><!--/span-->
+          </div><!--/row-->
+		  <div id="overlay">
+		  <div id="svgdataurl" ></div>
+			<div id="buttons" ></div></div>
+          <hr>
+     <footer>
+        <p>&copy; Company 2012</p>
+      </footer>
+
+    </div><!--/.fluid-container-->
+    
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="twitter-bootstrap-v2/docs/assets/js/jquery.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-transition.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-alert.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-modal.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-dropdown.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-tab.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-tooltip.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-popover.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-button.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-collapse.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-carousel.js"></script>
+    <script src="twitter-bootstrap-v2/docs/assets/js/bootstrap-typeahead.js"></script>
+
+  </body>
+</html>
