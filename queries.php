@@ -36,7 +36,7 @@ if ($otu == "") {
 }
 elseif ($otu !=""){ 
 	if ($name != "") {
-	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from small where Gene IN ($in_clause) and Subsite IN ($sub) and P < '$pval' and OTU IN ($in_clause2)";
+	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from short where Gene IN ($in_clause) and Subsite IN ($sub) and P < '$pval' and OTU IN ($in_clause2)";
 	$result= mysql_query($qstring) or die (mysql_error()); 
 	}
 }
