@@ -5,77 +5,32 @@
 var xmlhttp;
 
 // show information for the gene name passed as parameter, or for the current string in 'gene'
-function showGene(str) {
-	
-		str = document.getElementById('gene').value;
-		sub = document.getElementById('subsite').value;	
-		pval = document.getElementById('P-value').value;
-		document.getElementById('gene2').value = str;
-		document.getElementById('chart').style.display = 'inline';
-		if (sub == "'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'") {
-		selectall();
-		console.log("All Body Sites");
-		}
-		if (sub != "'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'") {
-		deselectall();
-		document.getElementById(sub).checked = true;
-		console.log(sub);
-		} 
-		if(str == ""){
-			return;
-		}
-	
-	xmlhttp=GetXmlHttpObject();
-	if (xmlhttp==null) {
-		alert ("Browser does not support HTTP Request");
-		return;
-	}
-	var url="queries.php";
-	url=url+"?q="+str + "&s="+ sub + "&p=" + pval;
-	url=url+"&sid="+Math.random();
-	xmlhttp.onreadystatechange=stateChanged;
-	xmlhttp.open("GET",url,true);
-	xmlhttp.send(null);
-//	document.getElementById('autosuggest_results').style.display = "none";
-//	alert(str);
-	document.getElementById('header').style.display = 'none';
-	document.getElementById('sidebar').style.display = 'inline';
-}
 
-function geneKeyUp(e) {
-//	alert("enter1");
-	var characterCode //literal character code will be stored in this variable
-	if(e && e.which){ //if which property of event object is supported (NN4)
-		e = e
-		characterCode = e.which //character code is contained in NN4's which property
-	}
-	else{
-		e = event
-		characterCode = e.keyCode //character code is contained in IE's keyCode property
-	}
-
-	if(characterCode == 13){ //if generated character code is equal to ascii 13 (if enter key)
-		showGene('');
-		return false;
-	}
-	/* else {
-	 autosuggest()
-	 console.log('suggesting');
-	 } */
-	}
 
 function showGene3(str) {
 		str = document.getElementById('gene2').value;
+		if (str == "") {
+		alert("Please enter a gene to search");
+		return;
+		}
+		if (str.length >= 90) {
+		alert("You are attempting to search too many genes")
+		return;
+		}
 		var sub = $('input:checkbox[name="subsite2[]"]:checked').map(function () {
         return this.value;
     }).get();
-		console.log(sub)
+		if (sub == "") {
+		alert("Please select at least one subsite to search")
+		return;
+		}
 		pval = document.getElementById('P-value2').value;
 		bac = document.getElementById('otu').value;
 		console.log(bac);
 		document.getElementById('chart').style.display = 'inline';
 		document.getElementById('forcecontain').style.display = 'block';
 		document.getElementById('otusearch').style.display = 'inline';
+		document.getElementById('stop').style.display = 'inline';
 	xmlhttp=GetXmlHttpObject();
 	if (xmlhttp==null) {
 		alert ("Browser does not support HTTP Request");
@@ -87,7 +42,6 @@ function showGene3(str) {
 	xmlhttp.onreadystatechange=stateChanged;
 	xmlhttp.open("GET",url,true);
 	xmlhttp.send(null);
-	console.log('refreshing')
 //	document.getElementById('autosuggest_results').style.display = "none";
 //	alert(str);
 }
@@ -115,8 +69,13 @@ function stateChanged() {
 		console.log(xmlhttp.status)
 		console.log(xmlhttp.responseText)
 		var jsonencoded = JSON.parse(xmlhttp.responseText);	
+		if (jsonencoded == "") {
+		alert("No results were found for these parameters");
+		return;
+		}
 		$(".link").remove();
 		$(".node").remove();
+		document.getElementById('otu').value = "";
 		graph(jsonencoded);
 		console.log('working')
 	}
@@ -176,7 +135,7 @@ links.forEach(function(link) {
 var width = 940,
     height = 600;
 
-var force = d3.layout.force()
+var force = self.force =  d3.layout.force()
     .nodes(d3.values(nodes))
     .links(links)
     .size([width, height])
@@ -216,12 +175,13 @@ node.append("text")
   .text(function(d) { return d.name; })
   .attr("class", function(d) {return "node" + d.kind;})
 
+ 
 // add the curvy lines
 function tick() {
     path.attr("d", function(d) {
         var dx = d.target.x - d.source.x,
             dy = d.target.y - d.source.y,
-            dr = (1500);
+            dr = (2500);
         return "M" + 
             d.source.x + "," + 
             d.source.y + "A" + 
@@ -233,8 +193,12 @@ function tick() {
     node
         .attr("transform", function(d) { 
             return "translate(" + d.x + "," + d.y + ")"; });
+			
 	
 }
+d3.select("#stop").on("click", function(){
+	force.stop();
+});
 
 d3.select("#save").on("click", function(){
 
@@ -286,7 +250,7 @@ d3.select("svg")
         .style("stroke", "lightsteelblue")
     d3.select(this).select("circle").transition()
         .duration(750)
-        .style("fill", "lightsteelblue");
+        .style("fill", "deeppink");
 	} 
 
 };
