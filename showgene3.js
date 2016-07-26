@@ -35,8 +35,9 @@ window.onload = function() {
 		.attr("id", "graphLinks");
 	// Setup force simulation
 	force = d3.forceSimulation();
-	var width = svg.node().clientWidth;
-	var height = svg.node().clientHeight;
+	// The clientWidth of an SVG is 0 in Firefox.  Use the div around it instead.
+	var width = svg.node().parentElement.clientWidth;
+	var height = svg.node().parentElement.clientHeight;
 	force.force("center", d3.forceCenter(width / 2, height / 2));
 	force.force("charge", d3.forceManyBody());
 	force.force("link", d3.forceLink().strength(function(link) {
