@@ -3,6 +3,7 @@ $name= $_GET["q"];
 $sub=$_GET["s"];
 $pval=$_GET["p"];
 $otu=$_GET["o"];
+$table=$_GET["table"];
 
 
 $database_name = 'abv'; // Set this to your Database Name
@@ -17,25 +18,34 @@ if (mysqli_connect_errno()) {
 
 $list = explode(',', $name);
 foreach ($list as $value) {
-	$in_clause[] = "'".  $sql->real_escape_string($value) . "'";
+	$in_clause[] = "'".  $sql->real_escape_string(strtoupper($value)) . "'";
 }
 $in_clause = join(',', $in_clause);
 $list2 = explode(',', $otu);
 foreach ($list2 as $value2) {
-	$in_clause2[] = "'".  $sql->real_escape_string($value2) . "'";
+	$in_clause2[] = "'".  $sql->real_escape_string(strtoupper($value2)) . "'";
 }
 $in_clause2 = join(',', $in_clause2);
 
+if ($table == "new") {
+	$tablechoice = "newData";
+}
+else {
+	$tablechoice = "short";
+}
+
+$sub = strtoupper($sub);
+
 if ($otu == "") {
 	if ($name != "") {
-	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from short where Gene IN ($in_clause) and Subsite IN ($sub) and P < '$pval'";
+	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from $tablechoice where UPPER(Gene) IN ($in_clause) and UPPER(Subsite) IN ($sub) and P < '$pval'";
 	$result= $sql->query($qstring) or die (mysqli_error($sql)); 
 	}
 	
 }
 elseif ($otu !=""){ 
 	if ($name != "") {
-	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from short where Gene IN ($in_clause) and Subsite IN ($sub) and P < '$pval' and OTU IN ($in_clause2)";
+	$qstring = "select Gene as 'source' , OTU as 'target', Subsite as 'type' from $tablechoice where UPPER(Gene) IN ($in_clause) and UPPER(Subsite) IN ($sub) and P < '$pval' and OTU IN ($in_clause2)";
 	$result = $sql->query($qstring) or die (mysql_error($sql)); 
 	}
 }

@@ -117,10 +117,21 @@ div#buttons {
 				<li><h3 style="font-family:sans-serif;">P-Value</h3>
 				<small><i>Select a maximum P-value for the correlations</i></small>
 				<select name="P-value2" id="P-value2">
-					<option value=".0001">&#60 1x10<sup>-4</sup></option> 
-					<option value=".00001">&#60 1x10<sup>-5</sup></option> 
-					<option value=".000001">&#60 1x10<sup>-6</sup></option></select> 	
-				<br><br></li>	
+          <option value=".1">&#60; 1x10<sup>-1</sup></option>
+          <option value=".01">&#60; 1x10<sup>-2</sup></option>
+          <option value=".001">&#60; 1x10<sup>-3</sup></option>
+					<option value=".0001" selected>&#60; 1x10<sup>-4</sup></option> 
+					<option value=".00001">&#60; 1x10<sup>-5</sup></option> 
+					<option value=".000001">&#60; 1x10<sup>-6</sup></option></select> 	
+				</li>
+        <li>
+          <h3>Dataset</h3>
+          <small><i>Select which data to use</i></small><br />
+          <input type="radio" id="datasetNew" name="dataset" value="new">
+          <label for="datasetNew" style="display: inline-block; padding: 0px 8px 0px 2px;">New</label>
+          <input type="radio" id="datasetOld" name="dataset" value="old" checked>
+          <label for="datasetOld" style="display: inline-block; padding: 0px 8px 0px 2px;">Old</label>
+        </li><br />
 				<input type="button" name="search" value="Refresh Graph" onclick="showGene3('')" />		
 				<input type="button" value="Preview Static Image" id="save" name="save" />
           </div><!--/.well -->

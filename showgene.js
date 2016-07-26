@@ -38,6 +38,9 @@ function showGene3(str) {
 	}
 	var url="queries.php";
 	url=url+"?q="+str + "&s="+ sub + "&p=" + pval + "&o=" + bac;
+	if (document.getElementById("datasetNew").checked) {
+		url += "&table=new";
+	}
 	url=url+"&sid="+Math.random();
 	console.log("URL: " + url);
 	xmlhttp.onreadystatechange=stateChanged;
