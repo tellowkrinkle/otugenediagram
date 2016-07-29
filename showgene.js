@@ -151,7 +151,7 @@ function graph(links){
 	var path = svg.append("svg:g").selectAll("path")
 		.data(force.links())
 		.enter().append("svg:path")
-		.attr("class", function(d) { return "link " + d.type; })
+		.attr("class", function(d) { return "link " + d.type.toLowerCase(); })
 		.attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
 	// define the nodes
