@@ -66,6 +66,82 @@ function updateData() {
 	return false;
 }
 
+// Node class
+function Node(name, type) {
+	this.name = name;
+	this.type = type;
+	if (type === "gene") {
+		this.circleSize = 7;
+		this.color = "#779ECB";
+	}
+	else {
+		this.circleSize = 5;
+		this.color = "#ccc";
+	}
+	this.links = 0;
+	this.connections = [];
+	this.highlightedBy = [];
+	this.hoverHighlight = null;
+	this.startHover = function(hoveredNode) {
+		if (hoveredNode === null) {
+			hoveredNode = this;
+		}
+		this.hoverHighlight = hoveredNode;
+	};
+	this.endHover = function(hoveredNode) {
+		if (hoveredNode === null || hoveredNode === this.hoverHighlight) {
+			this.hoverHighlight = null;
+		}
+	};
+	this.highlight = function(highlightedNode) {
+		for (var i = 0; i < this.highlightedBy.length; i++) {
+			if (highlightedNode === this.highlightedBy[i]) {
+				return;
+			}
+		}
+		this.highlightedBy.push(highlightedNode);
+	};
+	this.clearHighlight = function(highlightedNode) {
+		for (var i = 0; i < this.highlightedBy.length; i++) {
+			if (highlightedNode === this.highlightedBy[i]) {
+				this.highlightedBy.splice(i, 1);
+			}
+		}
+	};
+	this.isSelfHighlighted = function() {
+		for (var i = 0; i < this.highlightedBy.length; i++) {
+			if (this === this.highlightedBy[i]) {
+				return true;
+			}
+		}
+		return false;
+	};
+	this.addConnection = function(connectedNode) {
+		for (var i = 0; i < this.connections.length; i++) {
+			if (connectedNode === this.connections[i]) {
+				return;
+			}
+		}
+		this.connections.push(connectedNode);
+	};
+	this.getClass = function() {
+		if (this.hoverHighlight !== null) {
+			return "node highlight hoverHighlight";
+		}
+		else if (this.highlightedBy.length > 0) {
+			if (this.isSelfHighlighted()) {
+				return "node highlight selfHighlight";
+			}
+			else {
+				return "node highlight";
+			}
+		}
+		else {
+			return "node";
+		}
+	};
+}
+
 // Function to update the visual display using the currently cached data and the current filter options
 function redisplay() {
 	// Find Unique Nodes
@@ -76,12 +152,13 @@ function redisplay() {
 	var links = []; // D3 readable storage of links
 	response.forEach(function(link) {
 		if (genes[link.source] === undefined) {
-			var gene = {name: link.source, circleSize: '7', color: '#779ECB', type: 'gene', links: 0};
+			var gene = new Node(link.source, "gene");
 			genes[link.source] = gene;
 			nodes.push(gene);
 		}
+
 		if (bacteria[link.target] === undefined) {
-			var bac = {name: link.target, circleSize: '5', color: '#ccc', type: 'bacteria', links: 0};
+			var bac = new Node(link.target, "bacteria");
 			bacteria[link.target] = bac;
 			nodes.push(bac);
 		}
@@ -90,7 +167,9 @@ function redisplay() {
 		var linkString = link.source + "__" + link.target + "__" + link.type;
 		if (linkDic[linkString] === undefined) {
 			genes[link.source].links++;
+			genes[link.source].addConnection(bacteria[link.target]);
 			bacteria[link.target].links++;
+			bacteria[link.target].addConnection(genes[link.source]);
 			linkObject = {source: genes[link.source], target: bacteria[link.target], site: link.type};
 			linkDic[linkString] = linkObject;
 			links.push(linkObject);
@@ -107,26 +186,58 @@ function redisplay() {
 	// Add links to force simulation
 	force.force("link").links(links);
 
+	// D3 joins info: bost.ocks.org/mike/join/
 	// Setup display of nodes
 	var svgNodes = svg.selectAll(".node")
 		.data(nodes);
 	// Remove old data by removing the group
 	svgNodes.exit().remove();
 	// Add new data by adding an SVG group...
-	var svgNodesEnter = svgNodes.enter().append("g");
+	var svgNodeGroups = svgNodes.enter().append("g");
+	// Setup hover
+	svgNodeGroups.on("mouseover", function(node) {
+		node.connections.forEach(function(connectedNode) {
+			connectedNode.startHover(node);
+		});
+		node.startHover(node);
+		svgNodeGroups.attr("class", function(node) { return node.getClass(); });
+	});
+	svgNodeGroups.on("mouseout", function(node) {
+		node.connections.forEach(function(connectedNode) {
+			connectedNode.endHover(node);
+		});
+		node.endHover(node);
+		svgNodeGroups.attr("class", function(node) { return node.getClass(); });
+	});
+	svgNodeGroups.on("click", function(node) {
+		if (node.isSelfHighlighted()) {
+			node.connections.forEach(function(connectedNode) {
+				connectedNode.clearHighlight(node);
+			});
+			node.clearHighlight(node);
+		}
+		else {
+			node.connections.forEach(function(connectedNode) {
+				connectedNode.highlight(node);
+			});
+			node.highlight(node);
+		}
+		svgNodeGroups.attr("class", function(node) { return node.getClass(); });
+	});
 	// Set the class, name, and allow dragging
-	svgNodesEnter.attr("class", "node")
+	svgNodeGroups.attr("class", function(node) { return node.getClass(); })
 		.attr("id", function(node) { return node.name; })
 		.call(d3.drag()
 			.on("start", dragstarted)
 			.on("drag", dragged)
-			.on("end", dragended));
+			.on("end", dragended)
+		);
 	// Add a circle to the group (to represent the node)
-	svgNodesEnter.append("circle")
+	svgNodeGroups.append("circle")
 		.attr("r", function(node) { return node.circleSize; })
 		.attr("fill", function(node) { return node.color; });
 	// Add the label
-	svgNodesEnter.append("text")
+	svgNodeGroups.append("text")
 		.attr("x", 12)
 		.attr("dy", ".35em")
 		.attr("class", function(node) { return "node" + node.type; })
@@ -156,14 +267,14 @@ function redisplay() {
 	}
 
 	// Functions for node dragging
-	// From 
 	function dragstarted(node) {
-		if (!d3.event.active) force.alphaTarget(0.3).restart();
+		if (!d3.event.active) force.alphaTarget(0.3);
 		node.fx = node.x;
 		node.fy = node.y;
 	}
 
 	function dragged(node) {
+		force.restart();
 		node.fx = d3.event.x;
 		node.fy = d3.event.y;
 	}

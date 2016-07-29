@@ -12,19 +12,47 @@
 
 	.link {
 		stroke: #aaa;
+		stroke-width: 1.5px;
 	}
 
 	.node circle {
 		stroke: #fff;
 		stroke-width: 1.5px;
-		z-index: 1;
 	}
 
 	.node text {
-		fill: #000;
-		font: 10px sans-serif;
+		fill: #666;
+		font: 9px sans-serif;
 		pointer-events: none;
 		font-weight: bold;
+	}
+
+	.node.highlight text {
+		fill: #000;
+		font: 10px sans-serif;
+		font-weight: bold;
+	}
+
+	.node.highlight circle {
+		stroke: #000;
+	}
+
+	.node.hoverHighlight text {
+		fill: #048;
+		font: 11px sans-serif;
+		font-weight: bold;
+	}
+
+	.node.hoverHighlight circle {
+		stroke: #048;
+	}
+
+	.node.selfHighlight text {
+		fill: #226;
+	}
+
+	.node.selfHighlight circle {
+		stroke: #226;
 	}
 
 	</style>
