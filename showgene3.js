@@ -78,44 +78,12 @@ function Node(name, type) {
 		this.circleSize = 5;
 		this.color = "#ccc";
 	}
-	this.links = 0;
-	this.connections = [];
-	this.highlightedBy = [];
-	this.hoverHighlight = null;
-	this.startHover = function(hoveredNode) {
-		if (hoveredNode === null) {
-			hoveredNode = this;
-		}
-		this.hoverHighlight = hoveredNode;
-	};
-	this.endHover = function(hoveredNode) {
-		if (hoveredNode === null || hoveredNode === this.hoverHighlight) {
-			this.hoverHighlight = null;
-		}
-	};
-	this.highlight = function(highlightedNode) {
-		for (var i = 0; i < this.highlightedBy.length; i++) {
-			if (highlightedNode === this.highlightedBy[i]) {
-				return;
-			}
-		}
-		this.highlightedBy.push(highlightedNode);
-	};
-	this.clearHighlight = function(highlightedNode) {
-		for (var i = 0; i < this.highlightedBy.length; i++) {
-			if (highlightedNode === this.highlightedBy[i]) {
-				this.highlightedBy.splice(i, 1);
-			}
-		}
-	};
-	this.isSelfHighlighted = function() {
-		for (var i = 0; i < this.highlightedBy.length; i++) {
-			if (this === this.highlightedBy[i]) {
-				return true;
-			}
-		}
-		return false;
-	};
+	this.links = 0; // Number of links
+	this.connections = []; // All the nodes linked to this one
+	this.highlightedBy = []; // All the connected nodes that have been clicked (and should therefore be highlighting this node)
+	this.hoverHighlight = null; // If this node is being highlighted because a connected node (or this node) is under the mouse, store that node here
+
+	// Adds a node to the connections list if it's not already there
 	this.addConnection = function(connectedNode) {
 		for (var i = 0; i < this.connections.length; i++) {
 			if (connectedNode === this.connections[i]) {
@@ -124,7 +92,45 @@ function Node(name, type) {
 		}
 		this.connections.push(connectedNode);
 	};
-	this.getClass = function() {
+	// Sets the hoverHighlight to the given node
+	this.startHover = function(hoveredNode) {
+		this.hoverHighlight = hoveredNode;
+	};
+	// If the passed node is the one that started hover highlighting (or the passed node is null), will set hoverHighlight to null
+	this.endHover = function(hoveredNode) {
+		if (hoveredNode === null || hoveredNode === this.hoverHighlight) {
+			this.hoverHighlight = null;
+		}
+	};
+	// Adds a new node to the highlightedBy list if it's not already there
+	this.highlight = function(highlightedNode) {
+		for (var i = 0; i < this.highlightedBy.length; i++) {
+			if (highlightedNode === this.highlightedBy[i]) {
+				return;
+			}
+		}
+		this.highlightedBy.push(highlightedNode);
+	};
+	// Removes a node from the highlightedBy list if it's there
+	this.clearHighlight = function(highlightedNode) {
+		for (var i = 0; i < this.highlightedBy.length; i++) {
+			if (highlightedNode === this.highlightedBy[i]) {
+				this.highlightedBy.splice(i, 1);
+			}
+		}
+	};
+	// Returns true if this node is highlighting itself (is in its own highlightedBy list)
+	this.isSelfHighlighted = function() {
+		for (var i = 0; i < this.highlightedBy.length; i++) {
+			if (this === this.highlightedBy[i]) {
+				return true;
+			}
+		}
+		return false;
+	};
+	// Returns the string that represents the node's current classes.
+	// Use D3 with this function to update classes if you want any highlighting changes to take effect
+	this.getClassString = function() {
 		if (this.hoverHighlight !== null) {
 			return "node highlight hoverHighlight";
 		}
@@ -200,14 +206,14 @@ function redisplay() {
 			connectedNode.startHover(node);
 		});
 		node.startHover(node);
-		svgNodeGroups.attr("class", function(node) { return node.getClass(); });
+		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
 	});
 	svgNodeGroups.on("mouseout", function(node) {
 		node.connections.forEach(function(connectedNode) {
 			connectedNode.endHover(node);
 		});
 		node.endHover(node);
-		svgNodeGroups.attr("class", function(node) { return node.getClass(); });
+		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
 	});
 	svgNodeGroups.on("click", function(node) {
 		if (node.isSelfHighlighted()) {
@@ -222,10 +228,10 @@ function redisplay() {
 			});
 			node.highlight(node);
 		}
-		svgNodeGroups.attr("class", function(node) { return node.getClass(); });
+		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
 	});
 	// Set the class, name, and allow dragging
-	svgNodeGroups.attr("class", function(node) { return node.getClass(); })
+	svgNodeGroups.attr("class", function(node) { return node.getClassString(); })
 		.attr("id", function(node) { return node.name; })
 		.call(d3.drag()
 			.on("start", dragstarted)
