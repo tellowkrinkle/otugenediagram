@@ -152,7 +152,11 @@ body {
 	padding: 0px;
 }
 
-.button.half:active {
+.button:active {
+	background-color: #ddd;
+}
+
+.button.nontoggle:active {
 	background-color: #aaa;
 }
 

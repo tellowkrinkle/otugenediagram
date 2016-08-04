@@ -33,26 +33,32 @@
 				<li class="sidebar-settings">
 					<h3>Gene Search</h3>
 					<div class="description"> Type in a gene or multiple genes separated by commas</div>
-					<input type="text" id="geneSearchInput">
-					<span id="bodySiteSelection" style="display: none">
+					<input type="text" id="geneSearchInput" value="TP73,T,PLOD1,LRP8,MCTP2,CHIA,TPSG1,IMP3">
+					<div id="loadIndicator" style="display: none; text-indent: 0px; padding-left: 20px;">Loading...</div>
+					<span id="bodySiteSelection" style="display: none;">
 						<h3>Body Site</h3>
+						<div class="description">Select one or more Subsites to view correlations from certain body areas</div>
+						<div style="height: 5px;"></div>
 						<div class="buttongroup clearfix">
-							<div class="button half" id="selectAllButton">
-								Select All
-							</div>
-							<div class="button half" id="selectNoneButton">
-								Select None
-							</div>
+							<div class="button half nontoggle" id="selectAllButton">Select All</div>
+							<div class="button half nontoggle" id="selectNoneButton">Select None</div>
 						</div>
 						<div id="bodySiteButtons" class="buttongroup">
 						</div>
 					</span>
 					<h3>P-Value</h3>
-					<div class="description">Select a maximum P-Value (Currently <span id="pValueDisplay">all</span>)</div>
-					<input type="range" min=1 max=8 step=0.1 value=1 id="pValueInput">
+					<div class="description">Select a maximum P-Value (Currently <span id="pValueDisplay">10<sup> 0</sup></span>)</div>
+					<input type="range" min=0 max=8 step=0.1 value=0 id="pValueInput">
 					<h3>Display Size</h3>
 					<div class="description">Adjust the size of the graph to fit your screen</div>
 					<input type="range" min=20 max=200 value=75 id="sizeInput">
+					<h3>Dataset</h3>
+					<div class="description">Select which data to use</div>
+					<div style="height: 5px;"></div>
+					<div class="buttongroup clearfix">
+						<div class="button half selected" id="newDataButton">New Data</div>
+						<div class="button half" id="oldDataButton">Old Data</div>
+					</div>
 					<br><br>
 				</li>
 			</ul>

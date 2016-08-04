@@ -18,7 +18,9 @@ else {
 xmlhttp.onreadystatechange = function() {
 	if (xmlhttp.readyState === 4) {
 		if (xmlhttp.responseText) {
-			response = JSON.parse(xmlhttp.responseText);
+			response = JSON.parse(xmlhttp.responseText).map(function(link) {
+				return {source: link[0], target: link[1], site: link[2], pValue: link[3]};
+			});
 			var oldGenes = allGenes;
 			allGenes = {};
 			var oldBacteria = allBacteria;
@@ -45,10 +47,10 @@ xmlhttp.onreadystatechange = function() {
 				}
 
 				// Remove duplicate links
-				var linkString = link.source + "__" + link.target + "__" + link.type;
+				var linkString = getLinkString(link);
 				if (allLinks[linkString] === undefined) {
 					if (oldLinks[linkString] === undefined) {
-						allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allBacteria[link.target], site: link.type};
+						allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allBacteria[link.target], site: link.site};
 					}
 					else {
 						allLinks[linkString] = oldLinks[linkString];
@@ -56,6 +58,7 @@ xmlhttp.onreadystatechange = function() {
 				}
 			});
 			redisplay();
+			document.getElementById("loadIndicator").style.display = "none";
 		}
 	}
 };
@@ -146,12 +149,7 @@ window.onload = function() {
 	});
 	// Setup p-value slider
 	$("#pValueInput").on("input", function() {
-		if (this.value == 1) {
-			document.getElementById("pValueDisplay").innerHTML = "all";
-		}
-		else {
-			document.getElementById("pValueDisplay").innerHTML = "10<sup> -" + this.value + "</sup>";
-		}
+		document.getElementById("pValueDisplay").innerHTML = "10<sup> " + -1 * this.value + "</sup>";
 		redisplay();
 	});
 	// Setup body site select all button
@@ -170,7 +168,34 @@ window.onload = function() {
 		updateBodySiteButtonDisplay();
 		redisplay();
 	});
+	// Setup gene input
+	$("#geneSearchInput").on("change", function() {
+		updateData();
+	});
+	// Setup new data button
+	$("#newDataButton").on("click", function() {
+		if (this.className !== "button half selected") {
+			this.className = "button half selected";
+			document.getElementById("oldDataButton").className = "button half";
+			updateData();
+		}
+	});
+	// Setup old data button
+	$("#oldDataButton").on("click", function() {
+		if (this.className !== "button half selected") {
+			this.className = "button half selected";
+			document.getElementById("newDataButton").className = "button half";
+			updateData();
+		}
+	});
+
+	// Sometimes this runs before the sidebar loads and resizes the SVG
+	setTimeout(updateCenter, 1000);
 };
+
+function getLinkString(link) {
+	return link.source + "__" + link.target + "__" + link.site.toLowerCase();
+}
 
 function updateBodySiteButtonDisplay(sites) {
 	if (sites === undefined) {
@@ -194,21 +219,24 @@ function updateSize(size) {
 	force.force("compact").strength(1/Math.sqrt(size));
 }
 
-window.onresize = function(event) {
+function updateCenter() {
 	force.alpha(Math.max(0.1, force.alpha())).restart();
 	var width = svg.node().parentElement.clientWidth;
 	var height = svg.node().parentElement.clientHeight;
 	force.force("center", d3.forceCenter(width / 2, height / 2));
-};
+}
 
-// Function to make sure that we have the data needed to display the requested results.
-// Returns true if the required data is already cached and ready to be displayed, false if a request was made (but the current cached data isn't enough)
-// If the function returns false, redisplay() will be run when the new data is received.
+// Send a request for new data based on the current gene selection
 function updateData() {
-	// TODO: Actually write this function!
-	xmlhttp.open("GET", "queries.php?q=TP73,T,PLOD1,LRP8,MCTP2,CHIA,TPSG1,IMP3&s='anterior_nares','attached_keratinized_gingiva','buccal_mucosa','left_antecubital_fossa','hard_palate','left_retroauricular_crease','Palatine_Tonsils','right_retroauricular_crease','saliva','right_antecubital_fossa','stool','subgingival_plaque','Throat','supragingival_plaque','tongue_dorsum'&p=.0001&o=&sid=0.9060260635289157", true);
+	var queryURL = "getgene.php?genes=" + document.getElementById("geneSearchInput").value;
+	if (document.getElementById("newDataButton").className === "button half selected") {
+		queryURL += "&table=new";
+	}
+	queryURL += "&uniqueID=" + Math.random(); // Prevent getting cached data
+
+	xmlhttp.open("GET", queryURL, true);
 	xmlhttp.send();
-	return false;
+	document.getElementById("loadIndicator").style.display = "initial";
 }
 
 // Node class
@@ -316,7 +344,7 @@ function redisplay() {
 
 	// Get a list of the body sites that came up in the search
 	response.forEach(function(link) {
-		var siteName = link.type.toLowerCase();
+		var siteName = link.site.toLowerCase();
 		if (bodySiteInfo[siteName] === undefined) {
 			siteName = "other";
 		}
@@ -350,12 +378,19 @@ function redisplay() {
 
 	updateBodySiteButtonDisplay();
 
+	var pValueCutoff = Math.pow(10, -1 * document.getElementById("pValueInput").value);
+
 	var filteredResponses = response.filter(function(link) {
-		var bodySite = bodySiteInfo[link.type.toLowerCase()];
+		var bodySite = bodySiteInfo[link.site.toLowerCase()];
 		if (bodySite === undefined) {
 			bodySite = bodySiteInfo.other;
 		}
-		return bodySite.selected;
+		if (bodySite.selected) {
+			return link.pValue <= pValueCutoff;
+		}
+		else {
+			return false;
+		}
 	});
 
 	filteredResponses.forEach(function(link) {
@@ -374,7 +409,7 @@ function redisplay() {
 		}
 
 		// Remove duplicate links
-		var linkString = link.source + "__" + link.target + "__" + link.type;
+		var linkString = getLinkString(link);
 		if (linkDic[linkString] === undefined) {
 			genes[link.source].links++;
 			genes[link.source].addConnection(bacteria[link.target]);
@@ -418,7 +453,7 @@ function updateGraphLinks(links) {
 	svgLinks.exit().remove();
 	// Add new data by adding a new path
 	svgLinks.enter().append("line")
-		.attr("class", function(link) { return "link " + link.site; })
+		.attr("class", function(link) { return "link " + link.site.toLowerCase(); })
 		.style("stroke", function(link) {
 			var bodySite = bodySiteInfo[link.site.toLowerCase()];
 			if (bodySite === undefined) {
