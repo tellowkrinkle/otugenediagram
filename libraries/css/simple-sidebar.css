@@ -6,6 +6,8 @@
 
 body {
 	overflow-x: hidden;
+	padding: 0px;
+	margin: 0px;
 }
 
 /* Toggle Styles */
@@ -18,11 +20,22 @@ body {
 	transition: all 0.5s ease;
 }
 
+#wrapper * {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
 #wrapper.toggled {
 	padding-left: 300px;
 }
 
 #sidebar-wrapper {
+	font-size: 14px;
+	line-height: 1.42857143;
+	color: #333;
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: ;
 	z-index: 1000;
 	position: fixed;
 	left: 300px;
@@ -86,6 +99,7 @@ body {
 }
 
 .sidebar-nav > .sidebar-brand {
+	box-sizing: border-box;
 	height: 65px;
 	font-size: 18px;
 	line-height: 60px;
@@ -162,6 +176,10 @@ body {
 
 h3 {
 	font-size: 20px;
+	font-family: inherit;
+	font-weight: 500;
+	line-height: 1.1;
+	color: inherit;
 }
 
 html, body, #wrapper, #page-content-wrapper {
@@ -204,6 +222,10 @@ html, body, #wrapper, #page-content-wrapper {
 
 #sidebarHideShowAltArrow {
 	display: initial;
+}
+
+input[type=text] {
+	line-height: 1.4;
 }
 
 /* All just to have custom sliders */
