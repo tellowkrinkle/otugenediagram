@@ -10,8 +10,16 @@
 	<link rel="stylesheet" href="libraries/css/simple-sidebar.css">
 </head>
 <body>
-
 	<div id="wrapper">
+
+		<div id="sidebarHideShow" style="line-height: 0px;">
+			<svg id="sidebarHideShowImage" style="height: 40px; width: 15px;">
+				<path id="sidebarHideShowArrow" d="M11 4 L4 20 L11 36" stroke="#444" stroke-width="3" fill="none" />
+				<animate id="sidebarHideShowAnimate" xlink:href="#sidebarHideShowArrow" attributeName="d" attributeType="XML" from="M11 4 L4 20 L11 36" to="M11 4 L4 20 L11 36" dur="0.5s" fill="freeze"/>
+				<path id="sidebarHideShowAltArrow" d="M4 4 L11 20 L4 36" stroke="#444" stroke-width="3" fill="none" />
+				<animate id="sidebarHideShowAltAnimate" xlink:href="#sidebarHideShowAltArrow" attributeName="d" attributeType="XML" from="M4 4 L11 20 L4 36" to="M4 4 L11 20 L4 36" dur="0.5s" fill="freeze"/>
+			</svg>
+		</div>
 
 		<!-- Settings and Navigation -->
 		<div id="sidebar-wrapper">

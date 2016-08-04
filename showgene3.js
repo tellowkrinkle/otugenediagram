@@ -188,6 +188,22 @@ window.onload = function() {
 			updateData();
 		}
 	});
+	// Setup the hide/show sidebar button
+	$("#sidebarHideShow").on("click", function() {
+		if ($("#wrapper").hasClass("toggled")) {
+			$("#wrapper").removeClass("toggled");
+			$("#sidebarHideShowAnimate").attr("from", "M4 4 L11 20 L4 36").attr("to", "M11 4 L4 20 L11 36").get()[0].beginElement();
+			$("#sidebarHideShowAltAnimate").attr("from", "M11 4 L4 20 L11 36").attr("to", "M4 4 L11 20 L4 36").get()[0].beginElement();
+			setTimeout(updateCenter, 500);
+		}
+		else {
+			$("#wrapper").addClass("toggled");
+			$("#sidebarHideShowAnimate").attr("from", "M11 4 L4 20 L11 36").attr("to", "M4 4 L11 20 L4 36").get()[0].beginElement();
+			$("#sidebarHideShowAltAnimate").attr("from", "M4 4 L11 20 L4 36").attr("to", "M11 4 L4 20 L11 36").get()[0].beginElement();
+			setTimeout(updateCenter, 500);
+		}
+	});
+	window.onresize = updateCenter;
 
 	// Sometimes this runs before the sidebar loads and resizes the SVG
 	setTimeout(updateCenter, 1000);
@@ -436,8 +452,6 @@ function redisplay() {
 			compactForceLinks.push({source: centerNode, target: node});
 		}
 	});
-
-	console.log(compactForceLinks);
 
 	force.force("compact").links(compactForceLinks);
 }
