@@ -180,6 +180,8 @@ h3 {
 	font-weight: 500;
 	line-height: 1.1;
 	color: inherit;
+	margin-top: 20px;
+	margin-bottom: 10px;
 }
 
 html, body, #wrapper, #page-content-wrapper {
