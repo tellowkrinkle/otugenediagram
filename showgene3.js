@@ -19,15 +19,104 @@ xmlhttp.onreadystatechange = function() {
 	if (xmlhttp.readyState === 4) {
 		if (xmlhttp.responseText) {
 			response = JSON.parse(xmlhttp.responseText);
+			var oldGenes = allGenes;
+			allGenes = {};
+			var oldBacteria = allBacteria;
+			allBacteria = {};
+			var oldLinks = allLinks;
+			allLinks = {};
+			response.forEach(function(link) {
+				if (allGenes[link.source] === undefined) {
+					if (oldGenes[link.source] === undefined) {
+						allGenes[link.source] = new Node(link.source, "gene");
+					}
+					else {
+						allGenes[link.source] = oldGenes[link.source];
+					}
+				}
+
+				if (allBacteria[link.target] === undefined) {
+					if (oldBacteria[link.target] === undefined) {
+						allBacteria[link.target] = new Node(link.target, "bacteria");
+					}
+					else {
+						allBacteria[link.target] = oldBacteria[link.target];
+					}
+				}
+
+				// Remove duplicate links
+				var linkString = link.source + "__" + link.target + "__" + link.type;
+				if (allLinks[linkString] === undefined) {
+					if (oldLinks[linkString] === undefined) {
+						allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allBacteria[link.target], site: link.type};
+					}
+					else {
+						allLinks[linkString] = oldLinks[linkString];
+					}
+				}
+			});
 			redisplay();
 		}
 	}
+};
+
+function BodySite(name, color) {
+	this.name = name;
+	this.color = color;
+	this.selected = true;
+	// For sorting
+	this.compareTo = function(otherSite) {
+		if (this.name > otherSite.name) {
+			return 1;
+		}
+		else if (this.name < otherSite.name) {
+			return -1;
+		}
+		else {
+			return 0;
+		}
+	};
+	// Get the string for the corresponding button's class
+	this.getClassString = function() {
+		if (this.selected) {
+			return "button selected";
+		}
+		else {
+			return "button";
+		}
+	};
+}
+
+// Info for displaying body sites
+var bodySiteInfo = {
+	"anterior_nares": new BodySite("Anterior Nares", "71c9AC"),
+	"attached_keratinized_gingiva": new BodySite("Attached Keratinized Gingiva", "FE8D5C"),
+	"buccal_mucosa": new BodySite("Buccal Mucosa", "8C9FCD"),
+	"hard_palate": new BodySite("Hard Palate", "F5C9E4"),
+	"left_antecubital_fossa": new BodySite("Left Antecubital Fossa", "A5DA4A"),
+	"left_retroauricular_crease": new BodySite("Left Retroauricular Crease", "E6C591"),
+	"palatine_tonsils": new BodySite("Palatine Tonsils", "B3B3B3"),
+	"right_antecubital_fossa": new BodySite("Right Antecubital Fossa", "A5CEE4"),
+	"right_retroauricular_crease": new BodySite("Right Retroauricular Crease", "B1E086"),
+	"saliva": new BodySite("Saliva", "F681C2"),
+	"stool": new BodySite("Stool", "FEC068"),
+	"subgingival_plaque": new BodySite("Subgingival Plaque", "CAB1D7"),
+	"supragingival_plaque": new BodySite("Supragingival Plaque", "B3591F"),
+	"throat": new BodySite("Throat", "BA55D3"),
+	"tongue_dorsum": new BodySite("Tongue Dorsum", "1F792A"),
+	"other": new BodySite("Other", "000000")
 };
 
 // Setup HTML stuff
 var svg;
 var svgLinkGroup;
 var force;
+var currentSimBacteria = {};
+var currentSimGenes = {};
+var allLinks = {};
+var allBacteria = {};
+var allGenes = {};
+var centerNode = {}; // An undisplayed node used for the "compact" force
 window.onload = function() {
 	// Setup SVG
 	svg = d3.select("#graph");
@@ -43,18 +132,74 @@ window.onload = function() {
 	force.force("link", d3.forceLink().strength(function(link) {
 		return 1 / Math.min(link.target.links, link.source.links / 2, 4);
 	}));
+	// Prevents connected components from flying away into space
+	force.force("compact", d3.forceLink().strength(0.1).distance(0));
 
 	updateSize(75);
 
 	updateData();
 
+	// Setup interactibility on html elements
+	// Setup size slider
+	$("#sizeInput").on("input", function() {
+		updateSize(this.value);
+	});
+	// Setup p-value slider
+	$("#pValueInput").on("input", function() {
+		if (this.value == 1) {
+			document.getElementById("pValueDisplay").innerHTML = "all";
+		}
+		else {
+			document.getElementById("pValueDisplay").innerHTML = "10<sup> -" + this.value + "</sup>";
+		}
+		redisplay();
+	});
+	// Setup body site select all button
+	$("#selectAllButton").on("click", function() {
+		for (var siteName in bodySiteInfo) {
+			bodySiteInfo[siteName].selected = true;
+		}
+		updateBodySiteButtonDisplay();
+		redisplay();
+	});
+	// Setup body site select none button
+	$("#selectNoneButton").on("click", function() {
+		for (var siteName in bodySiteInfo) {
+			bodySiteInfo[siteName].selected = false;
+		}
+		updateBodySiteButtonDisplay();
+		redisplay();
+	});
 };
+
+function updateBodySiteButtonDisplay(sites) {
+	if (sites === undefined) {
+		sites = d3.select("#bodySiteButtons").selectAll(".button");
+	}
+	sites.attr("class", function(site) { return site.getClassString(); });
+	sites.style("color", function(site) {
+		if (site.selected) {
+			return "#" + site.color;
+		}
+		else {
+			return "inherit";
+		}
+	});
+}
 
 function updateSize(size) {
 	force.alpha(Math.max(0.1, force.alpha())).restart();
 	force.force("charge").strength(-3 * size).distanceMax(4 * size);
 	force.force("link").distance(size);
+	force.force("compact").strength(1/Math.sqrt(size));
 }
+
+window.onresize = function(event) {
+	force.alpha(Math.max(0.1, force.alpha())).restart();
+	var width = svg.node().parentElement.clientWidth;
+	var height = svg.node().parentElement.clientHeight;
+	force.force("center", d3.forceCenter(width / 2, height / 2));
+};
 
 // Function to make sure that we have the data needed to display the requested results.
 // Returns true if the required data is already cached and ready to be displayed, false if a request was made (but the current cached data isn't enough)
@@ -71,10 +216,12 @@ function Node(name, type) {
 	this.name = name;
 	this.type = type;
 	if (type === "gene") {
+		this.id = "gene_" + name;
 		this.circleSize = 7;
 		this.color = "#779ECB";
 	}
 	else {
+		this.id = "bacteria_" + name;
 		this.circleSize = 5;
 		this.color = "#ccc";
 	}
@@ -82,6 +229,14 @@ function Node(name, type) {
 	this.connections = []; // All the nodes linked to this one
 	this.highlightedBy = []; // All the connected nodes that have been clicked (and should therefore be highlighting this node)
 	this.hoverHighlight = null; // If this node is being highlighted because a connected node (or this node) is under the mouse, store that node here
+
+	// Clears all info about connections and links
+	this.clearLinkInfo = function() {
+		this.links = 0;
+		this.connections = [];
+		this.highlightedBy = [];
+		this.hoverHighlight = null;
+	};
 
 	// Adds a node to the connections list if it's not already there
 	this.addConnection = function(connectedNode) {
@@ -155,16 +310,65 @@ function redisplay() {
 	var genes = {}; // Stores all the gene nodes
 	var nodes = []; // D3 readable storage of both types of node
 	var linkDic = {}; // For removal of duplicate links
+	var bodySitesDic = {}; // Body sites available
 	var links = []; // D3 readable storage of links
+	var bodySites = []; // D3 readable storage of body sites
+
+	// Get a list of the body sites that came up in the search
 	response.forEach(function(link) {
+		var siteName = link.type.toLowerCase();
+		if (bodySiteInfo[siteName] === undefined) {
+			siteName = "other";
+		}
+		if (bodySitesDic[siteName] === undefined) {
+			var bodySite = bodySiteInfo[siteName];
+			bodySitesDic[siteName] = bodySite;
+			bodySites.push(bodySite);
+		}
+	});
+	bodySites.sort(function(site1, site2) { return site1.compareTo(site2); });
+
+	if (bodySites.length > 0) {
+		document.getElementById("bodySiteSelection").style.display = "initial";
+	}
+	else {
+		document.getElementById("bodySiteSelection").style.display = "none";
+	}
+
+	// Setup body site chooser
+	var siteListDisplay = d3.select("#bodySiteButtons").selectAll(".button").data(bodySites);
+
+	siteListDisplay.exit().remove();
+	siteListDisplay.enter().append("div")
+		.attr("class", function(site) { return site.getClassString(); })
+		.text(function(site) { return site.name; })
+		.on("click", function(site) {
+			site.selected = !site.selected;
+			updateBodySiteButtonDisplay(d3.select(this));
+			redisplay();
+		});
+
+	updateBodySiteButtonDisplay();
+
+	var filteredResponses = response.filter(function(link) {
+		var bodySite = bodySiteInfo[link.type.toLowerCase()];
+		if (bodySite === undefined) {
+			bodySite = bodySiteInfo.other;
+		}
+		return bodySite.selected;
+	});
+
+	filteredResponses.forEach(function(link) {
 		if (genes[link.source] === undefined) {
-			var gene = new Node(link.source, "gene");
+			var gene = allGenes[link.source];
+			gene.clearLinkInfo();
 			genes[link.source] = gene;
 			nodes.push(gene);
 		}
 
 		if (bacteria[link.target] === undefined) {
-			var bac = new Node(link.target, "bacteria");
+			var bac = allBacteria[link.target];
+			bac.clearLinkInfo();
 			bacteria[link.target] = bac;
 			nodes.push(bac);
 		}
@@ -176,44 +380,87 @@ function redisplay() {
 			genes[link.source].addConnection(bacteria[link.target]);
 			bacteria[link.target].links++;
 			bacteria[link.target].addConnection(genes[link.source]);
-			linkObject = {source: genes[link.source], target: bacteria[link.target], site: link.type};
+			linkObject = allLinks[linkString];
 			linkDic[linkString] = linkObject;
 			links.push(linkObject);
 		}
 	});
 
-	// Get SVG Width and height
-	var width = svg.node().clientWidth;
-	var height = svg.node().clientHeight;
+	currentSimGenes = genes;
+	currentSimBacteria = bacteria;
 
-	// Add nodes to force simulation
-	force.nodes(nodes)
-		.on("tick", tick);
+	// Restart the simulation
+	force.alpha(1).restart();
+
+	updateGraphNodes(nodes);
+	updateGraphLinks(links);
+
+	var compactForceLinks = [];
+	nodes.forEach(function(node) {
+		if (node.type == "gene") {
+			compactForceLinks.push({source: centerNode, target: node});
+		}
+	});
+
+	console.log(compactForceLinks);
+
+	force.force("compact").links(compactForceLinks);
+}
+
+function updateGraphLinks(links) {
 	// Add links to force simulation
 	force.force("link").links(links);
+
+	// Setup display of links
+	var svgLinks = svgLinkGroup.selectAll("line")
+		.data(links, function(link) { return link.id; });
+	// Remove old links by removing the path
+	svgLinks.exit().remove();
+	// Add new data by adding a new path
+	svgLinks.enter().append("line")
+		.attr("class", function(link) { return "link " + link.site; })
+		.style("stroke", function(link) {
+			var bodySite = bodySiteInfo[link.site.toLowerCase()];
+			if (bodySite === undefined) {
+				bodySite = bodySiteInfo.other;
+			}
+			return "#" + bodySite.color;
+		});
+}
+
+function updateGraphNodes(nodes) {
+	// Add nodes to force simulation
+	var forceGraphNodes = nodes.slice();
+	forceGraphNodes.push(centerNode);
+	force.nodes(forceGraphNodes)
+		.on("tick", tick);
 
 	// D3 joins info: bost.ocks.org/mike/join/
 	// Setup display of nodes
 	var svgNodes = svg.selectAll(".node")
-		.data(nodes);
+		.data(nodes, function(node) { return node.id; });
 	// Remove old data by removing the group
 	svgNodes.exit().remove();
 	// Add new data by adding an SVG group...
 	var svgNodeGroups = svgNodes.enter().append("g");
+	// Function to update classes after highlighting changes
+	function updateNodeStyling() {
+		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
+	}
 	// Setup hover
 	svgNodeGroups.on("mouseover", function(node) {
 		node.connections.forEach(function(connectedNode) {
 			connectedNode.startHover(node);
 		});
 		node.startHover(node);
-		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
+		updateNodeStyling();
 	});
 	svgNodeGroups.on("mouseout", function(node) {
 		node.connections.forEach(function(connectedNode) {
 			connectedNode.endHover(node);
 		});
 		node.endHover(node);
-		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
+		updateNodeStyling();
 	});
 	svgNodeGroups.on("click", function(node) {
 		if (node.isSelfHighlighted()) {
@@ -228,7 +475,7 @@ function redisplay() {
 			});
 			node.highlight(node);
 		}
-		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
+		updateNodeStyling();
 	});
 	// Set the class, name, and allow dragging
 	svgNodeGroups.attr("class", function(node) { return node.getClassString(); })
@@ -248,15 +495,6 @@ function redisplay() {
 		.attr("dy", ".35em")
 		.attr("class", function(node) { return "node" + node.type; })
 		.text(function(node) { return node.name; });
-
-	// Setup display of links
-	var svgLinks = svgLinkGroup.selectAll("line")
-		.data(links);
-	// Remove old links by removing the path
-	svgLinks.exit().remove();
-	// Add new data by adding a new path
-	svgLinks.enter().append("line")
-		.attr("class", function(link) { return "link " + link.site; });
 
 	// Setup tick function
 	function tick() {

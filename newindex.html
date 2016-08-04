@@ -6,59 +6,105 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="Force Diagram">
 	<meta name="author" content="">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="libraries/css/simple-sidebar.css">
 </head>
 <body>
-	<style>
 
-	.link {
-		stroke: #aaa;
-		stroke-width: 1.5px;
-	}
+	<div id="wrapper">
 
-	.node circle {
-		stroke: #fff;
-		stroke-width: 1.5px;
-	}
+		<!-- Settings and Navigation -->
+		<div id="sidebar-wrapper">
+			<ul class="sidebar-nav">
+				<li class="sidebar-brand">
+					<a href="#">
+						OTU Gene Diagram
+					</a>
+				</li>
+				<li class="active">
+					<a href="#">Home</a>
+				</li>
+				<li>
+					<a href="#about">About</a>
+				</li>
+				<li>
+					<a href="#contact">Contact</a>
+				</li>
+				<li class="sidebar-settings">
+					<h3>Gene Search</h3>
+					<div class="description"> Type in a gene or multiple genes separated by commas</div>
+					<input type="text" id="geneSearchInput">
+					<span id="bodySiteSelection" style="display: none">
+						<h3>Body Site</h3>
+						<div class="buttongroup clearfix">
+							<div class="button half" id="selectAllButton">
+								Select All
+							</div>
+							<div class="button half" id="selectNoneButton">
+								Select None
+							</div>
+						</div>
+						<div id="bodySiteButtons" class="buttongroup">
+						</div>
+					</span>
+					<h3>P-Value</h3>
+					<div class="description">Select a maximum P-Value (Currently <span id="pValueDisplay">all</span>)</div>
+					<input type="range" min=1 max=8 step=0.1 value=1 id="pValueInput">
+					<h3>Display Size</h3>
+					<div class="description">Adjust the size of the graph to fit your screen</div>
+					<input type="range" min=20 max=200 value=75 id="sizeInput">
+					<br><br>
+				</li>
+			</ul>
+		</div>
 
-	.node text {
-		fill: #666;
-		font: 9px sans-serif;
-		pointer-events: none;
-		font-weight: bold;
-	}
-
-	.node.highlight text {
-		fill: #000;
-		font: 10px sans-serif;
-		font-weight: bold;
-	}
-
-	.node.highlight circle {
-		stroke: #000;
-	}
-
-	.node.hoverHighlight text {
-		fill: #048;
-		font: 11px sans-serif;
-		font-weight: bold;
-	}
-
-	.node.hoverHighlight circle {
-		stroke: #048;
-	}
-
-	.node.selfHighlight text {
-		fill: #226;
-	}
-
-	.node.selfHighlight circle {
-		stroke: #226;
-	}
-
-	</style>
-	<div id="graphContainer" style="width: 940px; height: 600px;">
-		<svg id="graph" style="width: 100%; height: 100%;"></svg>
+		<!-- Actual Graph -->
+		<div id="page-content-wrapper">
+			<div id="graphContainer" style="height: 100%; border: 1px solid #888; padding: 0px; line-height: 0px; border-radius: 5px;">
+				<svg id="graph" style="width: 100%; height: 100%;">
+					<style type="text/css"><![CDATA[
+					.link {
+						stroke: #aaa;
+						stroke-width: 1.5px;
+					}
+					.node circle {
+						stroke: #fff;
+						stroke-width: 1.5px;
+					}
+					.node text {
+						fill: #666;
+						font: 9px sans-serif;
+						pointer-events: none;
+						font-weight: bold;
+					}
+					.node.highlight text {
+						fill: #000;
+						font: 10px sans-serif;
+						font-weight: bold;
+					}
+					.node.highlight circle {
+						stroke: #000;
+					}
+					.node.hoverHighlight text {
+						fill: #048;
+						font: 11px sans-serif;
+						font-weight: bold;
+					}
+					.node.hoverHighlight circle {
+						stroke: #048;
+					}
+					.node.selfHighlight text {
+						fill: #226;
+					}
+					.node.selfHighlight circle {
+						stroke: #226;
+					}
+					]]></style>
+				</svg>
+			</div>
+		</div>
 	</div>
+
 	<!-- Scripts -->
 	<!-- Old IE HTML5 Shim -->
 	<!--[if lt IE 9]>
