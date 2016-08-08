@@ -23,8 +23,8 @@ xmlhttp.onreadystatechange = function() {
 			});
 			var oldGenes = allGenes;
 			allGenes = {};
-			var oldBacteria = allBacteria;
-			allBacteria = {};
+			var oldOtus = allOtus;
+			allOtus = {};
 			var oldLinks = allLinks;
 			allLinks = {};
 			response.forEach(function(link) {
@@ -37,12 +37,12 @@ xmlhttp.onreadystatechange = function() {
 					}
 				}
 
-				if (allBacteria[link.target] === undefined) {
-					if (oldBacteria[link.target] === undefined) {
-						allBacteria[link.target] = new Node(link.target, "bacteria");
+				if (allOtus[link.target] === undefined) {
+					if (oldOtus[link.target] === undefined) {
+						allOtus[link.target] = new Node(link.target, "otu");
 					}
 					else {
-						allBacteria[link.target] = oldBacteria[link.target];
+						allOtus[link.target] = oldOtus[link.target];
 					}
 				}
 
@@ -50,7 +50,7 @@ xmlhttp.onreadystatechange = function() {
 				var linkString = getLinkString(link);
 				if (allLinks[linkString] === undefined) {
 					if (oldLinks[linkString] === undefined) {
-						allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allBacteria[link.target], site: link.site};
+						allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allOtus[link.target], site: link.site};
 					}
 					else {
 						allLinks[linkString] = oldLinks[linkString];
@@ -63,6 +63,7 @@ xmlhttp.onreadystatechange = function() {
 	}
 };
 
+// Body Site class
 function BodySite(name, color) {
 	this.name = name;
 	this.color = color;
@@ -114,12 +115,14 @@ var bodySiteInfo = {
 var svg;
 var svgLinkGroup;
 var force;
-var currentSimBacteria = {};
+var currentSimOtus = {};
 var currentSimGenes = {};
 var allLinks = {};
-var allBacteria = {};
+var allOtus = {};
 var allGenes = {};
 var centerNode = {}; // An undisplayed node used for the "compact" force
+var genesSearched = [];
+var otusSearched = [];
 window.onload = function() {
 	// Setup SVG
 	svg = d3.select("#graph");
@@ -140,7 +143,7 @@ window.onload = function() {
 
 	updateSize(75);
 
-	updateData();
+	updateGenesSearched();
 
 	// Setup interactibility on html elements
 	// Setup size slider
@@ -169,9 +172,12 @@ window.onload = function() {
 		redisplay();
 	});
 	// Setup gene input
-	$("#geneSearchInput").on("change", function() {
-		updateData();
+	$("#geneSearchInput").on("change", updateGenesSearched);
+	$("#geneSearchClearButton").on("click", function() {
+		genesSearched = [];
+		updateGenesSearched();
 	});
+	$("#otuSearchInput").on("change", updateOtusSearched);
 	// Setup new data button
 	$("#newDataButton").on("click", function() {
 		if (this.className !== "button half selected") {
@@ -203,6 +209,7 @@ window.onload = function() {
 			setTimeout(updateCenter, 500);
 		}
 	});
+	// Setup window resizing
 	window.onresize = updateCenter;
 
 	// Sometimes this runs before the sidebar loads and resizes the SVG
@@ -228,6 +235,56 @@ function updateBodySiteButtonDisplay(sites) {
 	});
 }
 
+function updateGenesSearched() {
+	var searchBox = document.getElementById("geneSearchInput");
+	var d3Array = genesSearched;
+	var buttonContainer = d3.select("#genesSearched");
+	var updateFunction = updateGenesSearched;
+	updateSearched(searchBox, d3Array, buttonContainer, updateFunction);
+	updateData();
+}
+
+function updateOtusSearched() {
+	var searchBox = document.getElementById("otuSearchInput");
+	var d3Array = otusSearched;
+	var buttonContainer = d3.select("#otusSearched");
+	var updateFunction = updateOtusSearched;
+	updateSearched(searchBox, d3Array, buttonContainer, updateFunction);
+	updateData();
+}
+
+function updateSearched(searchBox, d3Array, buttonContainer, updateFunction) {
+	// Add any new genes
+	var newThingsToSearch = searchBox.value.split(",");
+	searchBox.value = "";
+	newThingsToSearch.forEach(function(gene) {
+		var trimmedGene = gene.trim();
+		if (trimmedGene === "") {
+			return;
+		}
+		for (var i = 0; i < d3Array.length; i++) {
+			if (trimmedGene === d3Array[i]) {
+				return;
+			}
+		}
+		d3Array.push(trimmedGene);
+	});
+	var thingsSearchedDisplay = buttonContainer.selectAll(".button").data(d3Array, function(gene) { return gene; });
+	thingsSearchedDisplay.exit().remove();
+	thingsSearchedDisplay.enter().append("div")
+		.attr("class", "button selected")
+		.text(function(gene) { return gene; })
+		.on("click", function(gene) {
+			for (var i = 0; i < d3Array.length; i++) {
+				if (gene === d3Array[i]) {
+					d3Array.splice(i, 1);
+					break;
+				}
+			}
+			updateFunction();
+		});
+}
+
 function updateSize(size) {
 	force.alpha(Math.max(0.1, force.alpha())).restart();
 	force.force("charge").strength(-3 * size).distanceMax(4 * size);
@@ -244,7 +301,8 @@ function updateCenter() {
 
 // Send a request for new data based on the current gene selection
 function updateData() {
-	var queryURL = "getgene.php?genes=" + document.getElementById("geneSearchInput").value;
+	var queryURL = "getgene.php?genes=" + genesSearched.join(",");
+	queryURL += "&otus=" + otusSearched.join(",");
 	if (document.getElementById("newDataButton").className === "button half selected") {
 		queryURL += "&table=new";
 	}
@@ -265,7 +323,7 @@ function Node(name, type) {
 		this.color = "#779ECB";
 	}
 	else {
-		this.id = "bacteria_" + name;
+		this.id = "otu_" + name;
 		this.circleSize = 5;
 		this.color = "#ccc";
 	}
@@ -350,7 +408,7 @@ function Node(name, type) {
 // Function to update the visual display using the currently cached data and the current filter options
 function redisplay() {
 	// Find Unique Nodes
-	var bacteria = {}; // Stores all the bacteria nodes
+	var otus = {}; // Stores all the otu nodes
 	var genes = {}; // Stores all the gene nodes
 	var nodes = []; // D3 readable storage of both types of node
 	var linkDic = {}; // For removal of duplicate links
@@ -380,7 +438,7 @@ function redisplay() {
 	}
 
 	// Setup body site chooser
-	var siteListDisplay = d3.select("#bodySiteButtons").selectAll(".button").data(bodySites);
+	var siteListDisplay = d3.select("#bodySiteButtons").selectAll(".button").data(bodySites, function(site) { return site.name; });
 
 	siteListDisplay.exit().remove();
 	siteListDisplay.enter().append("div")
@@ -417,20 +475,20 @@ function redisplay() {
 			nodes.push(gene);
 		}
 
-		if (bacteria[link.target] === undefined) {
-			var bac = allBacteria[link.target];
-			bac.clearLinkInfo();
-			bacteria[link.target] = bac;
-			nodes.push(bac);
+		if (otus[link.target] === undefined) {
+			var otu = allOtus[link.target];
+			otu.clearLinkInfo();
+			otus[link.target] = otu;
+			nodes.push(otu);
 		}
 
 		// Remove duplicate links
 		var linkString = getLinkString(link);
 		if (linkDic[linkString] === undefined) {
 			genes[link.source].links++;
-			genes[link.source].addConnection(bacteria[link.target]);
-			bacteria[link.target].links++;
-			bacteria[link.target].addConnection(genes[link.source]);
+			genes[link.source].addConnection(otus[link.target]);
+			otus[link.target].links++;
+			otus[link.target].addConnection(genes[link.source]);
 			linkObject = allLinks[linkString];
 			linkDic[linkString] = linkObject;
 			links.push(linkObject);
@@ -438,7 +496,7 @@ function redisplay() {
 	});
 
 	currentSimGenes = genes;
-	currentSimBacteria = bacteria;
+	currentSimOtus = otus;
 
 	// Restart the simulation
 	force.alpha(1).restart();
@@ -446,9 +504,23 @@ function redisplay() {
 	updateGraphNodes(nodes);
 	updateGraphLinks(links);
 
+	// Calculate which nodes to pull together
 	var compactForceLinks = [];
+	var numGenes = 0, numOtus = 0;
 	nodes.forEach(function(node) {
-		if (node.type == "gene") {
+		if (node.type === "gene") {
+			numGenes++;
+		}
+		else {
+			numOtus++;
+		}
+	});
+	var lesserType = "gene";
+	if (numOtus < numGenes) {
+		lesserType = "otu";
+	}
+	nodes.forEach(function(node) {
+		if (node.type == lesserType) {
 			compactForceLinks.push({source: centerNode, target: node});
 		}
 	});
@@ -494,7 +566,7 @@ function updateGraphNodes(nodes) {
 	var svgNodeGroups = svgNodes.enter().append("g");
 	// Function to update classes after highlighting changes
 	function updateNodeStyling() {
-		svgNodeGroups.attr("class", function(node) { return node.getClassString(); });
+		svg.selectAll(".node").attr("class", function(node) { return node.getClassString(); });
 	}
 	// Setup hover
 	svgNodeGroups.on("mouseover", function(node) {

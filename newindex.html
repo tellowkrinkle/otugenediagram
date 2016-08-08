@@ -39,9 +39,20 @@
 				</li>
 				<li class="sidebar-settings">
 					<h3>Gene Search</h3>
-					<div class="description"> Type in a gene or multiple genes separated by commas</div>
+					<div class="description">Type in a gene or multiple genes separated by commas to add them to the search</div>
 					<input type="text" id="geneSearchInput" value="TP73,T,PLOD1,LRP8,MCTP2,CHIA,TPSG1,IMP3">
 					<div id="loadIndicator" style="display: none; text-indent: 0px; padding-left: 20px;">Loading...</div>
+					<div class="buttongroup">
+						<div id="geneSearchClearButton" class="button nontoggle">Clear</div>
+					</div>
+					<div id="genesSearched" class="buttongroup"></div>
+					<h3>OTU Search</h3>
+					<div class="description">Type in an OTU or multiple OTUs separated by commas to add them to the search</div>
+					<input type="text" id="otuSearchInput">
+					<div class="buttongroup">
+						<div id="otuSearchClearButton" class="button nontoggle">Clear</div>
+					</div>
+					<div id="otusSearched" class="buttongroup"></div>
 					<span id="bodySiteSelection" style="display: none;">
 						<h3>Body Site</h3>
 						<div class="description">Select one or more Subsites to view correlations from certain body areas</div>

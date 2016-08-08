@@ -1,8 +1,7 @@
 <?php
 
-error_reporting(E_ALL);
-
 $genelist = $_GET["genes"];
+$otulist = $_GET["otus"];
 $table = $_GET["table"];
 
 $database_name = 'abv'; // Set this to your Database Name
@@ -18,6 +17,13 @@ foreach ($genes as $gene) {
 }
 $quotedGenelist = join(",", $quotedGenes);
 
+$otus = explode(",", $otulist);
+$quotedOtus = array();
+foreach ($otus as $otu) {
+	array_push($quotedOtus, "'" . $sql->real_escape_string(strtoupper(trim($otu))) . "'");
+}
+$quotedOtulist = join(",", $quotedOtus);
+
 if ($table == "new") {
 	$tablechoice = "newData";
 }
@@ -25,7 +31,14 @@ else {
 	$tablechoice = "short";
 }
 
-$queryString = "select Gene, OTU, Subsite, P from $tablechoice where UPPER(Gene) IN ($quotedGenelist)";
+if (strlen($quotedOtulist) > 2) {
+	$otuclause = " OR UPPER(OTU) IN ($quotedOtulist)";
+}
+else {
+	$otuclause = "";
+}
+
+$queryString = "select Gene, OTU, Subsite, P from $tablechoice where UPPER(Gene) IN ($quotedGenelist) $otuclause";
 
 $result = $sql->query($queryString) or die (mysqli_error($sql));
 
