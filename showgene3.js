@@ -1,116 +1,3 @@
-
-// Setup AJAX
-var xmlhttp;
-var response;
-
-if (window.XMLHttpRequest) {
-	// code for IE7+, Firefox, Chrome, Opera, Safari
-	xmlhttp = new XMLHttpRequest();
-}
-else if (window.ActiveXObject) {
-	// code for IE6, IE5
-	xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-}
-else {
-	alert("Your browser doesn't support AJAX.  Please upgrade to any recent version of IE, Firefox, Safari, Opera, or Chrome.");
-}
-
-xmlhttp.onreadystatechange = function() {
-	if (xmlhttp.readyState === 4) {
-		if (xmlhttp.responseText) {
-			response = JSON.parse(xmlhttp.responseText).map(function(link) {
-				return {source: link[0], target: link[1], site: link[2], pValue: link[3]};
-			});
-			var oldGenes = allGenes;
-			allGenes = {};
-			var oldOtus = allOtus;
-			allOtus = {};
-			var oldLinks = allLinks;
-			allLinks = {};
-			response.forEach(function(link) {
-				if (allGenes[link.source] === undefined) {
-					if (oldGenes[link.source] === undefined) {
-						allGenes[link.source] = new Node(link.source, "gene");
-					}
-					else {
-						allGenes[link.source] = oldGenes[link.source];
-					}
-				}
-
-				if (allOtus[link.target] === undefined) {
-					if (oldOtus[link.target] === undefined) {
-						allOtus[link.target] = new Node(link.target, "otu");
-					}
-					else {
-						allOtus[link.target] = oldOtus[link.target];
-					}
-				}
-
-				// Remove duplicate links
-				var linkString = getLinkString(link);
-				if (allLinks[linkString] === undefined) {
-					if (oldLinks[linkString] === undefined) {
-						allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allOtus[link.target], site: link.site};
-					}
-					else {
-						allLinks[linkString] = oldLinks[linkString];
-					}
-				}
-			});
-			redisplay();
-			document.getElementById("loadIndicator").style.display = "none";
-		}
-	}
-};
-
-// Body Site class
-function BodySite(name, color) {
-	this.name = name;
-	this.color = color;
-	this.selected = true;
-	// For sorting
-	this.compareTo = function(otherSite) {
-		if (this.name > otherSite.name) {
-			return 1;
-		}
-		else if (this.name < otherSite.name) {
-			return -1;
-		}
-		else {
-			return 0;
-		}
-	};
-	// Get the string for the corresponding button's class
-	this.getClassString = function() {
-		if (this.selected) {
-			return "button selected";
-		}
-		else {
-			return "button";
-		}
-	};
-}
-
-// Info for displaying body sites
-var bodySiteInfo = {
-	"anterior_nares": new BodySite("Anterior Nares", "71c9AC"),
-	"attached_keratinized_gingiva": new BodySite("Attached Keratinized Gingiva", "FE8D5C"),
-	"buccal_mucosa": new BodySite("Buccal Mucosa", "8C9FCD"),
-	"hard_palate": new BodySite("Hard Palate", "F5C9E4"),
-	"left_antecubital_fossa": new BodySite("Left Antecubital Fossa", "A5DA4A"),
-	"left_retroauricular_crease": new BodySite("Left Retroauricular Crease", "E6C591"),
-	"palatine_tonsils": new BodySite("Palatine Tonsils", "B3B3B3"),
-	"right_antecubital_fossa": new BodySite("Right Antecubital Fossa", "A5CEE4"),
-	"right_retroauricular_crease": new BodySite("Right Retroauricular Crease", "B1E086"),
-	"saliva": new BodySite("Saliva", "F681C2"),
-	"stool": new BodySite("Stool", "FEC068"),
-	"subgingival_plaque": new BodySite("Subgingival Plaque", "CAB1D7"),
-	"supragingival_plaque": new BodySite("Supragingival Plaque", "B3591F"),
-	"throat": new BodySite("Throat", "BA55D3"),
-	"tongue_dorsum": new BodySite("Tongue Dorsum", "1F792A"),
-	"other": new BodySite("Other", "000000")
-};
-
 // Setup HTML stuff
 var svg;
 var svgLinkGroup;
@@ -216,6 +103,130 @@ window.onload = function() {
 	setTimeout(updateCenter, 1000);
 };
 
+// Body Site class
+function BodySite(name, color) {
+	this.name = name;
+	this.color = color;
+	this.selected = true;
+	// For sorting
+	this.compareTo = function(otherSite) {
+		if (this.name > otherSite.name) {
+			return 1;
+		}
+		else if (this.name < otherSite.name) {
+			return -1;
+		}
+		else {
+			return 0;
+		}
+	};
+	// Get the string for the corresponding button's class
+	this.getClassString = function() {
+		if (this.selected) {
+			return "button selected";
+		}
+		else {
+			return "button";
+		}
+	};
+}
+
+// Setup AJAX
+var linkXmlHttp, searchablesXmlHttp;
+var response;
+
+if (window.XMLHttpRequest) {
+	// code for IE7+, Firefox, Chrome, Opera, Safari
+	linkXmlHttp = new XMLHttpRequest();
+}
+else if (window.ActiveXObject) {
+	// code for IE6, IE5
+	linkXmlHttp = new ActiveXObject("Microsoft.linkXmlHttp");
+}
+else {
+	alert("Your browser doesn't support AJAX.  Please upgrade to any recent version of IE, Firefox, Safari, Opera, or Chrome.");
+}
+
+linkXmlHttp.onreadystatechange = function() {
+	if (linkXmlHttp.readyState === 4) {
+		if (linkXmlHttp.responseText) {
+			parseLinkResponse(linkXmlHttp.responseText);
+			redisplay();
+			document.getElementById("loadIndicator").style.display = "none";
+		}
+	}
+};
+
+searchablesXmlHttp.onreadystatechange = function() {
+	if (searchablesXmlHttp.readyState === 4) {
+		if (searchablesXmlHttp.responseText) {
+			parseSearchables(searchablesXmlHttp.responseText);
+		}
+	}
+};
+
+// Info for displaying body sites
+var bodySiteInfo = {
+	"anterior_nares": new BodySite("Anterior Nares", "71c9AC"),
+	"attached_keratinized_gingiva": new BodySite("Attached Keratinized Gingiva", "FE8D5C"),
+	"buccal_mucosa": new BodySite("Buccal Mucosa", "8C9FCD"),
+	"hard_palate": new BodySite("Hard Palate", "F5C9E4"),
+	"left_antecubital_fossa": new BodySite("Left Antecubital Fossa", "A5DA4A"),
+	"left_retroauricular_crease": new BodySite("Left Retroauricular Crease", "E6C591"),
+	"palatine_tonsils": new BodySite("Palatine Tonsils", "B3B3B3"),
+	"right_antecubital_fossa": new BodySite("Right Antecubital Fossa", "A5CEE4"),
+	"right_retroauricular_crease": new BodySite("Right Retroauricular Crease", "B1E086"),
+	"saliva": new BodySite("Saliva", "F681C2"),
+	"stool": new BodySite("Stool", "FEC068"),
+	"subgingival_plaque": new BodySite("Subgingival Plaque", "CAB1D7"),
+	"supragingival_plaque": new BodySite("Supragingival Plaque", "B3591F"),
+	"throat": new BodySite("Throat", "BA55D3"),
+	"tongue_dorsum": new BodySite("Tongue Dorsum", "1F792A"),
+	"other": new BodySite("Other", "000000")
+};
+
+function parseLinkResponse(responseText) {
+	response = JSON.parse(responseText).map(function(link) {
+		return {source: link[0], target: link[1], site: link[2], pValue: link[3]};
+	});
+	var oldGenes = allGenes;
+	allGenes = {};
+	var oldOtus = allOtus;
+	allOtus = {};
+	var oldLinks = allLinks;
+	allLinks = {};
+	response.forEach(function(link) {
+		if (allGenes[link.source] === undefined) {
+			if (oldGenes[link.source] === undefined) {
+				allGenes[link.source] = new Node(link.source, "gene");
+			}
+			else {
+				allGenes[link.source] = oldGenes[link.source];
+			}
+		}
+
+		if (allOtus[link.target] === undefined) {
+			if (oldOtus[link.target] === undefined) {
+				allOtus[link.target] = new Node(link.target, "otu");
+			}
+			else {
+				allOtus[link.target] = oldOtus[link.target];
+			}
+		}
+
+		// Remove duplicate links
+		var linkString = getLinkString(link);
+		if (allLinks[linkString] === undefined) {
+			if (oldLinks[linkString] === undefined) {
+				allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allOtus[link.target], site: link.site};
+			}
+			else {
+				allLinks[linkString] = oldLinks[linkString];
+			}
+		}
+	});
+}
+
 function getLinkString(link) {
 	return link.source + "__" + link.target + "__" + link.site.toLowerCase();
 }
@@ -308,8 +319,8 @@ function updateData() {
 	}
 	queryURL += "&uniqueID=" + Math.random(); // Prevent getting cached data
 
-	xmlhttp.open("GET", queryURL, true);
-	xmlhttp.send();
+	linkXmlHttp.open("GET", queryURL, true);
+	linkXmlHttp.send();
 	document.getElementById("loadIndicator").style.display = "initial";
 }
 
