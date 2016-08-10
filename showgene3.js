@@ -10,7 +10,11 @@ var allGenes = {};
 var centerNode = {}; // An undisplayed node used for the "compact" force
 var genesSearched = [];
 var otusSearched = [];
+var searchableGenes = [];
+var searchableOtus = [];
 window.onload = function() {
+	loadSearchables();
+
 	// Setup SVG
 	svg = d3.select("#graph");
 	svgLinkGroup = svg.append("g")
@@ -60,16 +64,38 @@ window.onload = function() {
 	});
 	// Setup gene input
 	$("#geneSearchInput").on("change", updateGenesSearched);
+	$("#geneSearchInput").on("blur", updateGenesSearched);
+	$("#geneSearchAutocomplete").on("mousedown", function() {
+		$("#geneSearchAutocomplete").attr("locked", "true");
+	});
+	$("#geneSearchAutocomplete").on("mouseup", function() {
+		$("#geneSearchAutocomplete").attr("locked", "false");
+	});
+	$("#geneSearchInput").on("input", updateGeneAutocomplete);
 	$("#geneSearchClearButton").on("click", function() {
 		genesSearched = [];
-		updateGenesSearched();
+		updateGenesSearchedList();
+	});
+	// Setup otu input
+	$("#otuSearchAutocomplete").on("mouseover", function() {
+		$("#otuSearchAutocomplete").attr("locked", "true");
+	});
+	$("#otuSearchAutocomplete").on("mouseout", function() {
+		$("#otuSearchAutocomplete").attr("locked", "false");
 	});
 	$("#otuSearchInput").on("change", updateOtusSearched);
+	$("#otuSearchInput").on("blur", updateOtusSearched);
+	$("#otuSearchInput").on("input", updateOtuAutocomplete);
+	$("#otuSearchClearButton").on("click", function() {
+		otusSearched = [];
+		updateOtusSearchedList();
+	});
 	// Setup new data button
 	$("#newDataButton").on("click", function() {
 		if (this.className !== "button half selected") {
 			this.className = "button half selected";
 			document.getElementById("oldDataButton").className = "button half";
+			loadSearchables();
 			updateData();
 		}
 	});
@@ -78,6 +104,7 @@ window.onload = function() {
 		if (this.className !== "button half selected") {
 			this.className = "button half selected";
 			document.getElementById("newDataButton").className = "button half";
+			loadSearchables();
 			updateData();
 		}
 	});
@@ -102,6 +129,12 @@ window.onload = function() {
 	// Sometimes this runs before the sidebar loads and resizes the SVG
 	setTimeout(updateCenter, 1000);
 };
+
+function addToArrayIfUnique(array, item) {
+	if (array.indexOf(item) === -1) {
+		array.push(item);
+	}
+}
 
 // Body Site class
 function BodySite(name, color) {
@@ -131,6 +164,26 @@ function BodySite(name, color) {
 	};
 }
 
+// Info for displaying body sites
+var bodySiteInfo = {
+	"anterior_nares": new BodySite("Anterior Nares", "71c9AC"),
+	"attached_keratinized_gingiva": new BodySite("Attached Keratinized Gingiva", "FE8D5C"),
+	"buccal_mucosa": new BodySite("Buccal Mucosa", "8C9FCD"),
+	"hard_palate": new BodySite("Hard Palate", "F5C9E4"),
+	"left_antecubital_fossa": new BodySite("Left Antecubital Fossa", "A5DA4A"),
+	"left_retroauricular_crease": new BodySite("Left Retroauricular Crease", "E6C591"),
+	"palatine_tonsils": new BodySite("Palatine Tonsils", "B3B3B3"),
+	"right_antecubital_fossa": new BodySite("Right Antecubital Fossa", "A5CEE4"),
+	"right_retroauricular_crease": new BodySite("Right Retroauricular Crease", "B1E086"),
+	"saliva": new BodySite("Saliva", "F681C2"),
+	"stool": new BodySite("Stool", "FEC068"),
+	"subgingival_plaque": new BodySite("Subgingival Plaque", "CAB1D7"),
+	"supragingival_plaque": new BodySite("Supragingival Plaque", "B3591F"),
+	"throat": new BodySite("Throat", "BA55D3"),
+	"tongue_dorsum": new BodySite("Tongue Dorsum", "1F792A"),
+	"other": new BodySite("Other", "000000")
+};
+
 // Setup AJAX
 var linkXmlHttp, searchablesXmlHttp;
 var response;
@@ -138,10 +191,12 @@ var response;
 if (window.XMLHttpRequest) {
 	// code for IE7+, Firefox, Chrome, Opera, Safari
 	linkXmlHttp = new XMLHttpRequest();
+	searchablesXmlHttp = new XMLHttpRequest();
 }
 else if (window.ActiveXObject) {
 	// code for IE6, IE5
 	linkXmlHttp = new ActiveXObject("Microsoft.linkXmlHttp");
+	searchablesXmlHttp = new ActiveXObject("Microsoft.linkXmlHttp");
 }
 else {
 	alert("Your browser doesn't support AJAX.  Please upgrade to any recent version of IE, Firefox, Safari, Opera, or Chrome.");
@@ -163,26 +218,6 @@ searchablesXmlHttp.onreadystatechange = function() {
 			parseSearchables(searchablesXmlHttp.responseText);
 		}
 	}
-};
-
-// Info for displaying body sites
-var bodySiteInfo = {
-	"anterior_nares": new BodySite("Anterior Nares", "71c9AC"),
-	"attached_keratinized_gingiva": new BodySite("Attached Keratinized Gingiva", "FE8D5C"),
-	"buccal_mucosa": new BodySite("Buccal Mucosa", "8C9FCD"),
-	"hard_palate": new BodySite("Hard Palate", "F5C9E4"),
-	"left_antecubital_fossa": new BodySite("Left Antecubital Fossa", "A5DA4A"),
-	"left_retroauricular_crease": new BodySite("Left Retroauricular Crease", "E6C591"),
-	"palatine_tonsils": new BodySite("Palatine Tonsils", "B3B3B3"),
-	"right_antecubital_fossa": new BodySite("Right Antecubital Fossa", "A5CEE4"),
-	"right_retroauricular_crease": new BodySite("Right Retroauricular Crease", "B1E086"),
-	"saliva": new BodySite("Saliva", "F681C2"),
-	"stool": new BodySite("Stool", "FEC068"),
-	"subgingival_plaque": new BodySite("Subgingival Plaque", "CAB1D7"),
-	"supragingival_plaque": new BodySite("Supragingival Plaque", "B3591F"),
-	"throat": new BodySite("Throat", "BA55D3"),
-	"tongue_dorsum": new BodySite("Tongue Dorsum", "1F792A"),
-	"other": new BodySite("Other", "000000")
 };
 
 function parseLinkResponse(responseText) {
@@ -227,6 +262,23 @@ function parseLinkResponse(responseText) {
 	});
 }
 
+function loadSearchables() {
+	var queryURL = "getoptions.php";
+	if (document.getElementById("newDataButton").className === "button half selected") {
+		queryURL += "?table=new";
+	}
+	searchablesXmlHttp.open("GET", queryURL, true);
+	searchablesXmlHttp.send();
+}
+
+function parseSearchables(responseText) {
+	searchableGenes = [];
+	searchableOtus = [];
+	var searchables = JSON.parse(responseText);
+	searchableGenes = searchables.genes.sort();
+	searchableOtus = searchables.microbes.sort();
+}
+
 function getLinkString(link) {
 	return link.source + "__" + link.target + "__" + link.site.toLowerCase();
 }
@@ -250,36 +302,60 @@ function updateGenesSearched() {
 	var searchBox = document.getElementById("geneSearchInput");
 	var d3Array = genesSearched;
 	var buttonContainer = d3.select("#genesSearched");
-	var updateFunction = updateGenesSearched;
-	updateSearched(searchBox, d3Array, buttonContainer, updateFunction);
-	updateData();
+	var updateFunction = updateGenesSearchedList;
+	var searchables = searchableGenes;
+	var autocompleteList = document.getElementById("geneSearchAutocomplete");
+	updateSearched(searchBox, d3Array, buttonContainer, updateFunction, autocompleteList);
 }
 
 function updateOtusSearched() {
 	var searchBox = document.getElementById("otuSearchInput");
 	var d3Array = otusSearched;
 	var buttonContainer = d3.select("#otusSearched");
-	var updateFunction = updateOtusSearched;
-	updateSearched(searchBox, d3Array, buttonContainer, updateFunction);
-	updateData();
+	var updateFunction = updateOtusSearchedList;
+	var autocompleteList = document.getElementById("otuSearchAutocomplete");
+	updateSearched(searchBox, d3Array, buttonContainer, updateFunction, autocompleteList);
 }
 
-function updateSearched(searchBox, d3Array, buttonContainer, updateFunction) {
+function updateSearched(searchBox, d3Array, buttonContainer, updateFunction, autocompleteList) {
 	// Add any new genes
-	var newThingsToSearch = searchBox.value.split(",");
-	searchBox.value = "";
+	var newThingsToSearch = searchBox.value.split(",").map(function(x) { return x.trim(); });
+	// Don't input if they clicked an autocomplete (Not the best way of doing it, but I've got nothing better)
+	if (autocompleteList.getAttribute("locked") === "true") {
+		return;
+	}
+
 	newThingsToSearch.forEach(function(gene) {
-		var trimmedGene = gene.trim();
-		if (trimmedGene === "") {
+		if (gene === "") {
 			return;
 		}
 		for (var i = 0; i < d3Array.length; i++) {
-			if (trimmedGene === d3Array[i]) {
+			if (gene === d3Array[i]) {
 				return;
 			}
 		}
-		d3Array.push(trimmedGene);
+		d3Array.push(gene);
 	});
+	searchBox.value = "";
+	autocompleteList.style.visibility = "hidden";
+	updateSearchedList(d3Array, buttonContainer, updateFunction);
+}
+
+function updateGenesSearchedList() {
+	var d3Array = genesSearched;
+	var buttonContainer = d3.select("#genesSearched");
+	var updateFunction = updateGenesSearchedList;
+	updateSearchedList(d3Array, buttonContainer, updateFunction);
+}
+
+function updateOtusSearchedList() {
+	var d3Array = otusSearched;
+	var buttonContainer = d3.select("#otusSearched");
+	var updateFunction = updateOtusSearchedList;
+	updateSearchedList(d3Array, buttonContainer, updateFunction);
+}
+
+function updateSearchedList(d3Array, buttonContainer, updateFunction) {
 	var thingsSearchedDisplay = buttonContainer.selectAll(".button").data(d3Array, function(gene) { return gene; });
 	thingsSearchedDisplay.exit().remove();
 	thingsSearchedDisplay.enter().append("div")
@@ -294,6 +370,57 @@ function updateSearched(searchBox, d3Array, buttonContainer, updateFunction) {
 			}
 			updateFunction();
 		});
+	updateData();
+}
+
+function updateGeneAutocomplete() {
+	var inputBox = document.getElementById("geneSearchInput");
+	var autocompleteBox = document.getElementById("geneSearchAutocomplete");
+	var itemsSearched = genesSearched;
+	var searchables = searchableGenes;
+	var updateFunction = updateGenesSearchedList;
+	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+}
+
+function updateOtuAutocomplete() {
+	var inputBox = document.getElementById("otuSearchInput");
+	var autocompleteBox = document.getElementById("otuSearchAutocomplete");
+	var itemsSearched = otusSearched;
+	var searchables = searchableOtus;
+	var updateFunction = updateOtusSearchedList;
+	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+}
+
+function updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction) {
+	var currentInput = inputBox.value.toLowerCase();
+	if (currentInput.length > 0) {
+		autocompleteBox.style.visibility = "visible";
+		var lowerCaseSearched = itemsSearched.map(function(x) { return x.toLowerCase(); });
+		var matchedItems = searchables.filter(function(name) {
+			name = name.toLowerCase();
+			if (name.indexOf(currentInput) != -1) {
+				if (lowerCaseSearched.indexOf(name) != -1) {
+					return false;
+				}
+				return true;
+			}
+			return false;
+		});
+		var autocompleteList = d3.select(autocompleteBox).selectAll(".button").data(matchedItems, function(name) { return name; });
+		autocompleteList.exit().remove();
+		autocompleteList.enter().append("div")
+			.attr("class", "button")
+			.text(function(name) { return name; })
+			.on("click", function(name) {
+				itemsSearched.push(name);
+				updateFunction();
+				autocompleteBox.style.visibility = "hidden";
+				inputBox.value = "";
+			});
+	}
+	else {
+		autocompleteBox.style.visibility = "hidden";
+	}
 }
 
 function updateSize(size) {

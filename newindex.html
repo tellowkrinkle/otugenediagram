@@ -41,29 +41,36 @@
 					<h3>Human Genes</h3>
 					<div class="description">Type in a gene or multiple genes separated by commas to add them to the search</div>
 					<input type="text" id="geneSearchInput" value="TP73,T,PLOD1,LRP8,MCTP2,CHIA,TPSG1,IMP3">
-					<div id="loadIndicator" style="display: none; text-indent: 0px; padding-left: 20px;">Loading...</div>
+					<div class="searchAutocomplete">
+						<div id="geneSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
+						</div>
+					</div>
 					<div class="description">Currently displayed</div>
-					<div class="buttongroup">
+					<div class="buttonGroup">
 						<div id="geneSearchClearButton" class="button nontoggle">Clear</div>
 					</div>
-					<div id="genesSearched" class="buttongroup"></div>
+					<div id="genesSearched" class="buttonGroup"></div>
 					<h3>Microbiome Taxa</h3>
 					<div class="description">Type in a taxon or multiple taxa separated by commas to add them to the search</div>
 					<input type="text" id="otuSearchInput">
+					<div class="searchAutocomplete">
+						<div id="otuSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
+						</div>
+					</div>
 					<div class="description">Currently displayed</div>
-					<div class="buttongroup">
+					<div class="buttonGroup">
 						<div id="otuSearchClearButton" class="button nontoggle">Clear</div>
 					</div>
-					<div id="otusSearched" class="buttongroup"></div>
+					<div id="otusSearched" class="buttonGroup"></div>
 					<span id="bodySiteSelection" style="display: none;">
 						<h3>Body Site</h3>
 						<div class="description">Select one or more Subsites to view correlations from certain body areas</div>
 						<div style="height: 5px;"></div>
-						<div class="buttongroup clearfix">
+						<div class="buttonGroup clearfix">
 							<div class="button half nontoggle" id="selectAllButton">Select All</div>
 							<div class="button half nontoggle" id="selectNoneButton">Select None</div>
 						</div>
-						<div id="bodySiteButtons" class="buttongroup">
+						<div id="bodySiteButtons" class="buttonGroup">
 						</div>
 					</span>
 					<h3>P-Value</h3>
@@ -75,7 +82,7 @@
 					<h3>Dataset</h3>
 					<div class="description">Select which data to use</div>
 					<div style="height: 5px;"></div>
-					<div class="buttongroup clearfix">
+					<div class="buttonGroup clearfix">
 						<div class="button half selected" id="newDataButton">New Data</div>
 						<div class="button half" id="oldDataButton">Old Data</div>
 					</div>
@@ -85,7 +92,8 @@
 		</div>
 
 		<!-- Actual Graph -->
-		<div id="page-content-wrapper">
+		<div id="page-content-wrapper" style="position: relative">
+			<div id="loadIndicator" style="display: none; position: absolute; top: 30px; left: 30px; z-index: 2; background: #ddd; border-radius: 5px; padding: 5px;">Loading...</div>
 			<div id="graphContainer" style="height: 100%; border: 1px solid #888; padding: 0px; line-height: 0px; border-radius: 5px;">
 				<svg id="graph" style="width: 100%; height: 100%;">
 					<style type="text/css"><![CDATA[
