@@ -297,7 +297,7 @@ function parseLinkResponse(responseText) {
 
 function loadSearchables() {
 	var queryURL = "getoptions.php";
-	if (document.getElementById("newDataButton").className === "button half selected") {
+	if (document.getElementById("newDataButton") === null || document.getElementById("newDataButton").className === "button half selected") {
 		queryURL += "?table=new";
 	}
 	searchablesXmlHttp.open("GET", queryURL, true);
@@ -506,7 +506,7 @@ function updateCenter() {
 function updateData() {
 	var queryURL = "getgene.php?genes=" + genesSearched.join(",");
 	queryURL += "&otus=" + otusSearched.join(",");
-	if (document.getElementById("newDataButton").className === "button half selected") {
+	if (document.getElementById("newDataButton") === null || document.getElementById("newDataButton").className === "button half selected") {
 		queryURL += "&table=new";
 	}
 	queryURL += "&uniqueID=" + Math.random(); // Prevent getting cached data
@@ -697,7 +697,13 @@ function redisplay() {
 
 	updateBodySiteButtonDisplay();
 
-	var pValueCutoff = Math.pow(10, -1 * document.getElementById("pValueInput").value);
+	var pValueCutoff;
+	if (document.getElementById("pValueInput") !== null) {
+		pValueCutoff = Math.pow(10, -1 * document.getElementById("pValueInput").value);
+	}
+	else {
+		pValueCutoff = 1;
+	}
 
 	var lcHiddenNodes = hiddenNodes.map(function(x) { return x.toLowerCase(); });
 
