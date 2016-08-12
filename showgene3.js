@@ -338,7 +338,9 @@ function updateGenesSearched() {
 	var listUpdateFunction = updateGenesSearchedList;
 	var dataUpdateFunction = updateData;
 	var autocompleteList = document.getElementById("geneSearchAutocomplete");
-	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList);
+	var clearButton = document.getElementById("geneSearchClearButton");
+	var emptyClearButtonText = "No genes searched";
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
 }
 
 function updateOtusSearched() {
@@ -348,7 +350,9 @@ function updateOtusSearched() {
 	var listUpdateFunction = updateOtusSearchedList;
 	var dataUpdateFunction = updateData;
 	var autocompleteList = document.getElementById("otuSearchAutocomplete");
-	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList);
+	var clearButton = document.getElementById("otuSearchClearButton");
+	var emptyClearButtonText = "No taxa searched";
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
 }
 
 function updateHiddenPoints() {
@@ -358,10 +362,12 @@ function updateHiddenPoints() {
 	var listUpdateFunction = updateHiddenPointsList;
 	var dataUpdateFunction = redisplay;
 	var autocompleteList = document.getElementById("hideSearchAutocomplete");
-	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList);
+	var clearButton = document.getElementById("hideSearchClearButton");
+	var emptyClearButtonText = "No nodes hidden";
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
 }
 
-function updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction,  autocompleteList) {
+function updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction,  autocompleteList, clearButton, emptyClearButtonText) {
 	// Add any new genes
 	var newThingsToSearch = searchBox.value.split(",").map(function(x) { return x.trim(); });
 	// Don't input if they clicked an autocomplete (Not the best way of doing it, but I've got nothing better)
@@ -382,7 +388,7 @@ function updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction,
 	});
 	searchBox.value = "";
 	autocompleteList.style.visibility = "hidden";
-	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
 function updateGenesSearchedList() {
@@ -390,7 +396,9 @@ function updateGenesSearchedList() {
 	var buttonContainer = d3.select("#genesSearched");
 	var listUpdateFunction = updateGenesSearchedList;
 	var dataUpdateFunction = updateData;
-	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
+	var clearButton = document.getElementById("geneSearchClearButton");
+	var emptyClearButtonText = "No genes searched";
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
 function updateOtusSearchedList() {
@@ -398,7 +406,9 @@ function updateOtusSearchedList() {
 	var buttonContainer = d3.select("#otusSearched");
 	var listUpdateFunction = updateOtusSearchedList;
 	var dataUpdateFunction = updateData;
-	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
+	var clearButton = document.getElementById("otuSearchClearButton");
+	var emptyClearButtonText = "No taxa searched";
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
 function updateHiddenPointsList() {
@@ -406,15 +416,19 @@ function updateHiddenPointsList() {
 	var buttonContainer = d3.select("#currentlyHidden");
 	var listUpdateFunction = updateHiddenPointsList;
 	var dataUpdateFunction = redisplay;
-	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
+	var clearButton = document.getElementById("hideSearchClearButton");
+	var emptyClearButtonText = "No nodes hidden";
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
-function updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction) {
+function updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText) {
 	var thingsSearchedDisplay = buttonContainer.selectAll(".button").data(d3Array, function(gene) { return gene; });
 	thingsSearchedDisplay.exit().remove();
 	thingsSearchedDisplay.enter().append("div")
-		.attr("class", "button selected")
+		.attr("class", "button selected disabled")
 		.text(function(gene) { return gene; })
+		.append("svg")
+		.attr("class", "closeButton")
 		.on("click", function(gene) {
 			for (var i = 0; i < d3Array.length; i++) {
 				if (gene === d3Array[i]) {
@@ -423,7 +437,19 @@ function updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUp
 				}
 			}
 			listUpdateFunction();
-		});
+		})
+		.append("path")
+		.attr("stroke-linecap", "round")
+		.attr("stroke-linejoin", "round")
+		.attr("stroke-width", 3)
+		.attr("fill", "none")
+		.attr("d", "M4 4 L16 16 M4 16 L16 4");
+	if (d3Array.length === 0) {
+		clearButton.innerHTML = emptyClearButtonText;
+	}
+	else {
+		clearButton.innerHTML = "Clear";
+	}
 	dataUpdateFunction();
 }
 

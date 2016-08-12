@@ -154,6 +154,7 @@ body {
 
 .searchAutocomplete {
 	position: relative;
+	z-index: 1;
 	width: 260px;
 	height: 0px;
 }
@@ -172,6 +173,7 @@ body {
 }
 
 .button {
+	position: relative;
 	text-align: center;
 	text-indent: 0px;
 	cursor: pointer;
@@ -206,6 +208,37 @@ body {
 
 .button.nontoggle:active {
 	background-color: #aaa;
+}
+
+.button.disabled {
+	cursor: initial;
+	border: #eee;
+}
+
+.button.disabled:active {
+	background-color: #eee;
+}
+
+.closeButton {
+	position: absolute;
+	cursor: pointer;
+	stroke: #333;
+	right: 0px;
+	top: 0px;
+	height: 20px;
+	width: 20px;
+	-webkit-transition: all 0.25s ease;
+	-moz-transition: all 0.25s ease;
+	-o-transition: all 0.25s ease;
+	transition: all 0.25s ease;
+}
+
+.closeButton:hover {
+	stroke: #a33;
+}
+
+.closeButton:active {
+	stroke: #833;
 }
 
 h3 {
