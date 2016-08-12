@@ -37,7 +37,13 @@ window.onload = function() {
 	// Prevents connected components from flying away into space
 	force.force("compact", d3.forceLink().strength(0.1).distance(0));
 
-	updateSize(75);
+	if (width > 1000 && height > 1000) {
+		document.getElementById("sizeInput").value = 125;
+	}
+	else if (width > 750 && height > 750) {
+		document.getElementById("sizeInput").value = 100;
+	}
+	updateSize(document.getElementById("sizeInput").value);
 
 	updateGenesSearched();
 
