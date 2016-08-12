@@ -163,6 +163,7 @@ window.onload = function() {
 	setTimeout(updateCenter, 1000);
 };
 
+// Adds item to array if array doesn't already contain item
 function addToArrayIfUnique(array, item) {
 	if (array.indexOf(item) === -1) {
 		array.push(item);
@@ -170,12 +171,14 @@ function addToArrayIfUnique(array, item) {
 }
 
 // Body Site class
-function BodySite(name, color) {
-	this.name = name;
-	this.color = color;
-	this.selected = true;
+var BodySite = (function() {
+	function BodySiteImplementation(name, color) {
+		this.name = name;
+		this.color = color;
+		this.selected = true;
+	}
 	// For sorting
-	this.compareTo = function(otherSite) {
+	BodySiteImplementation.prototype.compareTo = function(otherSite) {
 		if (this.name > otherSite.name) {
 			return 1;
 		}
@@ -187,7 +190,7 @@ function BodySite(name, color) {
 		}
 	};
 	// Get the string for the corresponding button's class
-	this.getClassString = function() {
+	BodySiteImplementation.prototype.getClassString = function() {
 		if (this.selected) {
 			return "button selected";
 		}
@@ -195,7 +198,9 @@ function BodySite(name, color) {
 			return "button";
 		}
 	};
-}
+
+	return BodySiteImplementation;
+})();
 
 // Info for displaying body sites
 var bodySiteInfo = {
@@ -220,81 +225,94 @@ var bodySiteInfo = {
 // Setup AJAX
 var linkXmlHttp, searchablesXmlHttp;
 var response;
-
-if (window.XMLHttpRequest) {
-	// code for IE7+, Firefox, Chrome, Opera, Safari
-	linkXmlHttp = new XMLHttpRequest();
-	searchablesXmlHttp = new XMLHttpRequest();
-}
-else if (window.ActiveXObject) {
-	// code for IE6, IE5
-	linkXmlHttp = new ActiveXObject("Microsoft.linkXmlHttp");
-	searchablesXmlHttp = new ActiveXObject("Microsoft.linkXmlHttp");
-}
-else {
-	alert("Your browser doesn't support AJAX.  Please upgrade to any recent version of IE, Firefox, Safari, Opera, or Chrome.");
-}
-
-linkXmlHttp.onreadystatechange = function() {
-	if (linkXmlHttp.readyState === 4) {
-		if (linkXmlHttp.responseText) {
-			parseLinkResponse(linkXmlHttp.responseText);
-			redisplay();
-			document.getElementById("loadIndicator").style.display = "none";
-		}
+setupAJAX();
+function setupAJAX() {
+	if (window.XMLHttpRequest) {
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		linkXmlHttp = new XMLHttpRequest();
+		searchablesXmlHttp = new XMLHttpRequest();
 	}
-};
-
-searchablesXmlHttp.onreadystatechange = function() {
-	if (searchablesXmlHttp.readyState === 4) {
-		if (searchablesXmlHttp.responseText) {
-			parseSearchables(searchablesXmlHttp.responseText);
-		}
+	else if (window.ActiveXObject) {
+		// code for IE6, IE5
+		linkXmlHttp = new ActiveXObject("Microsoft.linkXmlHttp");
+		searchablesXmlHttp = new ActiveXObject("Microsoft.linkXmlHttp");
 	}
-};
+	else {
+		alert("Your browser doesn't support AJAX.  Please upgrade to any recent version of IE, Firefox, Safari, Opera, or Chrome.");
+	}
 
-function parseLinkResponse(responseText) {
-	response = JSON.parse(responseText).map(function(link) {
-		return {source: link[0], target: link[1], site: link[2], pValue: link[3]};
-	});
-	var oldGenes = allGenes;
-	allGenes = {};
-	var oldOtus = allOtus;
-	allOtus = {};
-	var oldLinks = allLinks;
-	allLinks = {};
-	response.forEach(function(link) {
-		if (allGenes[link.source] === undefined) {
-			if (oldGenes[link.source] === undefined) {
-				allGenes[link.source] = new Node(link.source, "gene");
-			}
-			else {
-				allGenes[link.source] = oldGenes[link.source];
+	linkXmlHttp.onreadystatechange = function() {
+		if (linkXmlHttp.readyState === 4) {
+			if (linkXmlHttp.responseText) {
+				parseLinkResponse(linkXmlHttp.responseText);
+				redisplay();
+				document.getElementById("loadIndicator").style.display = "none";
 			}
 		}
+	};
 
-		if (allOtus[link.target] === undefined) {
-			if (oldOtus[link.target] === undefined) {
-				allOtus[link.target] = new Node(link.target, "otu");
-			}
-			else {
-				allOtus[link.target] = oldOtus[link.target];
+	searchablesXmlHttp.onreadystatechange = function() {
+		if (searchablesXmlHttp.readyState === 4) {
+			if (searchablesXmlHttp.responseText) {
+				parseSearchables(searchablesXmlHttp.responseText);
 			}
 		}
+	};
 
-		// Remove duplicate links
-		var linkString = getLinkString(link);
-		if (allLinks[linkString] === undefined) {
-			if (oldLinks[linkString] === undefined) {
-				allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allOtus[link.target], site: link.site};
+	// Function to parse the response from getgene.php
+	function parseLinkResponse(responseText) {
+		response = JSON.parse(responseText).map(function(link) {
+			return {source: link[0], target: link[1], site: link[2], pValue: link[3]};
+		});
+		var oldGenes = allGenes;
+		allGenes = {};
+		var oldOtus = allOtus;
+		allOtus = {};
+		var oldLinks = allLinks;
+		allLinks = {};
+		response.forEach(function(link) {
+			if (allGenes[link.source] === undefined) {
+				if (oldGenes[link.source] === undefined) {
+					allGenes[link.source] = new Node(link.source, "gene");
+				}
+				else {
+					allGenes[link.source] = oldGenes[link.source];
+				}
 			}
-			else {
-				allLinks[linkString] = oldLinks[linkString];
+
+			if (allOtus[link.target] === undefined) {
+				if (oldOtus[link.target] === undefined) {
+					allOtus[link.target] = new Node(link.target, "otu");
+				}
+				else {
+					allOtus[link.target] = oldOtus[link.target];
+				}
 			}
-		}
-	});
+
+			// Remove duplicate links
+			var linkString = getLinkString(link);
+			if (allLinks[linkString] === undefined) {
+				if (oldLinks[linkString] === undefined) {
+					allLinks[linkString] = {id: "link_" + linkString, source: allGenes[link.source], target: allOtus[link.target], site: link.site};
+				}
+				else {
+					allLinks[linkString] = oldLinks[linkString];
+				}
+			}
+		});
+	}
+
+	// Function to parse the response from getoptions.php
+	function parseSearchables(responseText) {
+		searchableGenes = [];
+		searchableOtus = [];
+		var searchables = JSON.parse(responseText);
+		searchableGenes = searchables.genes.sort();
+		searchableOtus = searchables.microbes.sort();
+	}
 }
 
+// Submit the AJAX request for getoptions.php
 function loadSearchables() {
 	var queryURL = "getoptions.php";
 	if (document.getElementById("newDataButton") === null || document.getElementById("newDataButton").className === "button half selected") {
@@ -304,18 +322,14 @@ function loadSearchables() {
 	searchablesXmlHttp.send();
 }
 
-function parseSearchables(responseText) {
-	searchableGenes = [];
-	searchableOtus = [];
-	var searchables = JSON.parse(responseText);
-	searchableGenes = searchables.genes.sort();
-	searchableOtus = searchables.microbes.sort();
-}
-
+// Get a string that uniquely identifies a link
 function getLinkString(link) {
 	return link.source + "__" + link.target + "__" + link.site.toLowerCase();
 }
 
+// Update the classes and colors for the given sites
+// so that the HTML corresponds to the current settings
+// If sites isn't specified, defaults to all
 function updateBodySiteButtonDisplay(sites) {
 	if (sites === undefined) {
 		sites = d3.select("#bodySiteButtons").selectAll(".button");
@@ -331,42 +345,8 @@ function updateBodySiteButtonDisplay(sites) {
 	});
 }
 
-function updateGenesSearched() {
-	var searchBox = document.getElementById("geneSearchInput");
-	var d3Array = genesSearched;
-	var buttonContainer = d3.select("#genesSearched");
-	var listUpdateFunction = updateGenesSearchedList;
-	var dataUpdateFunction = updateData;
-	var autocompleteList = document.getElementById("geneSearchAutocomplete");
-	var clearButton = document.getElementById("geneSearchClearButton");
-	var emptyClearButtonText = "No genes searched";
-	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
-}
-
-function updateOtusSearched() {
-	var searchBox = document.getElementById("otuSearchInput");
-	var d3Array = otusSearched;
-	var buttonContainer = d3.select("#otusSearched");
-	var listUpdateFunction = updateOtusSearchedList;
-	var dataUpdateFunction = updateData;
-	var autocompleteList = document.getElementById("otuSearchAutocomplete");
-	var clearButton = document.getElementById("otuSearchClearButton");
-	var emptyClearButtonText = "No taxa searched";
-	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
-}
-
-function updateHiddenPoints() {
-	var searchBox = document.getElementById("hideInput");
-	var d3Array = hiddenNodes;
-	var buttonContainer = d3.select("#currentlyHidden");
-	var listUpdateFunction = updateHiddenPointsList;
-	var dataUpdateFunction = redisplay;
-	var autocompleteList = document.getElementById("hideSearchAutocomplete");
-	var clearButton = document.getElementById("hideSearchClearButton");
-	var emptyClearButtonText = "No nodes hidden";
-	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
-}
-
+// Fairly generic function to update a search list
+// Like the ones used for the gene search, otu search, and hidden nodes
 function updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction,  autocompleteList, clearButton, emptyClearButtonText) {
 	// Add any new genes
 	var newThingsToSearch = searchBox.value.split(",").map(function(x) { return x.trim(); });
@@ -391,36 +371,49 @@ function updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction,
 	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
-function updateGenesSearchedList() {
+// updateSearched with the data pre-filled for the gene list
+function updateGenesSearched() {
+	var searchBox = document.getElementById("geneSearchInput");
 	var d3Array = genesSearched;
 	var buttonContainer = d3.select("#genesSearched");
 	var listUpdateFunction = updateGenesSearchedList;
 	var dataUpdateFunction = updateData;
+	var autocompleteList = document.getElementById("geneSearchAutocomplete");
 	var clearButton = document.getElementById("geneSearchClearButton");
 	var emptyClearButtonText = "No genes searched";
-	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
 }
 
-function updateOtusSearchedList() {
+// updateSearched with the data pre-filled for the otu list
+function updateOtusSearched() {
+	var searchBox = document.getElementById("otuSearchInput");
 	var d3Array = otusSearched;
 	var buttonContainer = d3.select("#otusSearched");
 	var listUpdateFunction = updateOtusSearchedList;
 	var dataUpdateFunction = updateData;
+	var autocompleteList = document.getElementById("otuSearchAutocomplete");
 	var clearButton = document.getElementById("otuSearchClearButton");
 	var emptyClearButtonText = "No taxa searched";
-	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
 }
 
-function updateHiddenPointsList() {
+// updateSearched with the data pre-filled for the hidden nodes list
+function updateHiddenPoints() {
+	var searchBox = document.getElementById("hideInput");
 	var d3Array = hiddenNodes;
 	var buttonContainer = d3.select("#currentlyHidden");
 	var listUpdateFunction = updateHiddenPointsList;
 	var dataUpdateFunction = redisplay;
+	var autocompleteList = document.getElementById("hideSearchAutocomplete");
 	var clearButton = document.getElementById("hideSearchClearButton");
 	var emptyClearButtonText = "No nodes hidden";
-	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList, clearButton, emptyClearButtonText);
 }
 
+// Fairly generic function to update a search list
+// without parsing the corresponding input box
+// (for if you change the javascript array in code)
+// Called by updateSearched
 function updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText) {
 	var thingsSearchedDisplay = buttonContainer.selectAll(".button").data(d3Array, function(gene) { return gene; });
 	thingsSearchedDisplay.exit().remove();
@@ -453,33 +446,40 @@ function updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUp
 	dataUpdateFunction();
 }
 
-function updateGeneAutocomplete() {
-	var inputBox = document.getElementById("geneSearchInput");
-	var autocompleteBox = document.getElementById("geneSearchAutocomplete");
-	var itemsSearched = genesSearched;
-	var searchables = searchableGenes;
-	var updateFunction = updateGenesSearchedList;
-	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+// updateSearchedList with the data pre-filled for the gene list
+function updateGenesSearchedList() {
+	var d3Array = genesSearched;
+	var buttonContainer = d3.select("#genesSearched");
+	var listUpdateFunction = updateGenesSearchedList;
+	var dataUpdateFunction = updateData;
+	var clearButton = document.getElementById("geneSearchClearButton");
+	var emptyClearButtonText = "No genes searched";
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
-function updateOtuAutocomplete() {
-	var inputBox = document.getElementById("otuSearchInput");
-	var autocompleteBox = document.getElementById("otuSearchAutocomplete");
-	var itemsSearched = otusSearched;
-	var searchables = searchableOtus;
-	var updateFunction = updateOtusSearchedList;
-	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+// updateSearchedList with the data pre-filled for the otu list
+function updateOtusSearchedList() {
+	var d3Array = otusSearched;
+	var buttonContainer = d3.select("#otusSearched");
+	var listUpdateFunction = updateOtusSearchedList;
+	var dataUpdateFunction = updateData;
+	var clearButton = document.getElementById("otuSearchClearButton");
+	var emptyClearButtonText = "No taxa searched";
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
-function updateHiddenAutocomplete() {
-	var inputBox = document.getElementById("hideInput");
-	var autocompleteBox = document.getElementById("hideSearchAutocomplete");
-	var itemsSearched = hiddenNodes;
-	var searchables = displayedNodes;
-	var updateFunction = updateHiddenPointsList;
-	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+// updateSearchedList with the data pre-filled for the hidden nodes list
+function updateHiddenPointsList() {
+	var d3Array = hiddenNodes;
+	var buttonContainer = d3.select("#currentlyHidden");
+	var listUpdateFunction = updateHiddenPointsList;
+	var dataUpdateFunction = redisplay;
+	var clearButton = document.getElementById("hideSearchClearButton");
+	var emptyClearButtonText = "No nodes hidden";
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, clearButton, emptyClearButtonText);
 }
 
+// Fairly generic function to display an autocomplete box for a list input
 function updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction) {
 	var currentInput = inputBox.value.toLowerCase();
 	if (currentInput.length > 0) {
@@ -512,6 +512,39 @@ function updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchable
 	}
 }
 
+// updateAutocomplete with the data pre-filled for the gene input
+function updateGeneAutocomplete() {
+	var inputBox = document.getElementById("geneSearchInput");
+	var autocompleteBox = document.getElementById("geneSearchAutocomplete");
+	var itemsSearched = genesSearched;
+	var searchables = searchableGenes;
+	var updateFunction = updateGenesSearchedList;
+	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+}
+
+// updateAutocomplete with the data pre-filled for the otu input
+function updateOtuAutocomplete() {
+	var inputBox = document.getElementById("otuSearchInput");
+	var autocompleteBox = document.getElementById("otuSearchAutocomplete");
+	var itemsSearched = otusSearched;
+	var searchables = searchableOtus;
+	var updateFunction = updateOtusSearchedList;
+	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+}
+
+// updateAutocomplete with the data pre-filled for the node hiding input
+function updateHiddenAutocomplete() {
+	var inputBox = document.getElementById("hideInput");
+	var autocompleteBox = document.getElementById("hideSearchAutocomplete");
+	var itemsSearched = hiddenNodes;
+	var searchables = displayedNodes;
+	var updateFunction = updateHiddenPointsList;
+	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+}
+
+// Update the size of the graph
+// Changes the force settings for link distance and force strength
+// based on the size parameter.  
 function updateSize(size) {
 	unfreezeGraph();
 	force.alpha(Math.max(0.1, force.alpha())).restart();
@@ -520,6 +553,8 @@ function updateSize(size) {
 	force.force("compact").strength(1/Math.sqrt(size));
 }
 
+// Checks the size of the SVG and updates the centering force accordingly
+// Call when the svg gets resized for whatever reason
 function updateCenter() {
 	force.alpha(Math.max(0.1, force.alpha())).restart();
 	var width = svg.node().parentElement.clientWidth;
@@ -542,6 +577,8 @@ function updateData() {
 	document.getElementById("loadIndicator").style.display = "initial";
 }
 
+// Set all forces' strengths to zero (so that everything stops moving)
+// The centering force doesn't have a strength parameter, so remove it completely
 function freezeGraph() {
 	if (frozen === false) {
 		frozen = true;
@@ -554,6 +591,8 @@ function freezeGraph() {
 	}
 }
 
+// Set all forces' strengths to what they were before freezeGraph was called
+// (and re-add the centering force)
 function unfreezeGraph() {
 	if (frozen === true) {
 		force.alpha(Math.max(0.1, force.alpha())).restart();
@@ -566,6 +605,7 @@ function unfreezeGraph() {
 	}
 }
 
+// If the graph is frozen, unfreeze it.  If it's not, the freeze it.
 function toggleFreeze() {
 	if (frozen) {
 		unfreezeGraph();
@@ -575,6 +615,7 @@ function toggleFreeze() {
 	}
 }
 
+// Open the svg in a new window for easy saving
 function saveGraph() {
 	var width = svg.node().parentElement.clientWidth;
 	var height = svg.node().parentElement.clientHeight;
@@ -584,34 +625,34 @@ function saveGraph() {
 }
 
 // Node class
-function Node(name, type) {
-	this.name = name;
-	this.type = type;
-	if (type === "gene") {
-		this.id = "gene_" + name;
-		this.circleSize = 7;
-		this.color = "#779ECB";
+var Node = (function() {
+	function NodeImplementation(name, type) {
+		this.name = name;
+		this.type = type;
+		if (type === "gene") {
+			this.id = "gene_" + name;
+			this.circleSize = 7;
+			this.color = "#779ECB";
+		}
+		else {
+			this.id = "otu_" + name;
+			this.circleSize = 5;
+			this.color = "#ccc";
+		}
+		this.links = 0; // Number of links
+		this.connections = []; // All the nodes linked to this one
+		this.highlightedBy = []; // All the connected nodes that have been clicked (and should therefore be highlighting this node)
+		this.hoverHighlight = null; // If this node is being highlighted because a connected node (or this node) is under the mouse, store that node here
 	}
-	else {
-		this.id = "otu_" + name;
-		this.circleSize = 5;
-		this.color = "#ccc";
-	}
-	this.links = 0; // Number of links
-	this.connections = []; // All the nodes linked to this one
-	this.highlightedBy = []; // All the connected nodes that have been clicked (and should therefore be highlighting this node)
-	this.hoverHighlight = null; // If this node is being highlighted because a connected node (or this node) is under the mouse, store that node here
-
 	// Clears all info about connections and links
-	this.clearLinkInfo = function() {
+	NodeImplementation.prototype.clearLinkInfo = function() {
 		this.links = 0;
 		this.connections = [];
 		this.highlightedBy = [];
 		this.hoverHighlight = null;
 	};
-
 	// Adds a node to the connections list if it's not already there
-	this.addConnection = function(connectedNode) {
+	NodeImplementation.prototype.addConnection = function(connectedNode) {
 		for (var i = 0; i < this.connections.length; i++) {
 			if (connectedNode === this.connections[i]) {
 				return;
@@ -620,17 +661,17 @@ function Node(name, type) {
 		this.connections.push(connectedNode);
 	};
 	// Sets the hoverHighlight to the given node
-	this.startHover = function(hoveredNode) {
+	NodeImplementation.prototype.startHover = function(hoveredNode) {
 		this.hoverHighlight = hoveredNode;
 	};
 	// If the passed node is the one that started hover highlighting (or the passed node is null), will set hoverHighlight to null
-	this.endHover = function(hoveredNode) {
+	NodeImplementation.prototype.endHover = function(hoveredNode) {
 		if (hoveredNode === null || hoveredNode === this.hoverHighlight) {
 			this.hoverHighlight = null;
 		}
 	};
 	// Adds a new node to the highlightedBy list if it's not already there
-	this.highlight = function(highlightedNode) {
+	NodeImplementation.prototype.highlight = function(highlightedNode) {
 		for (var i = 0; i < this.highlightedBy.length; i++) {
 			if (highlightedNode === this.highlightedBy[i]) {
 				return;
@@ -639,7 +680,7 @@ function Node(name, type) {
 		this.highlightedBy.push(highlightedNode);
 	};
 	// Removes a node from the highlightedBy list if it's there
-	this.clearHighlight = function(highlightedNode) {
+	NodeImplementation.prototype.clearHighlight = function(highlightedNode) {
 		for (var i = 0; i < this.highlightedBy.length; i++) {
 			if (highlightedNode === this.highlightedBy[i]) {
 				this.highlightedBy.splice(i, 1);
@@ -647,7 +688,7 @@ function Node(name, type) {
 		}
 	};
 	// Returns true if this node is highlighting itself (is in its own highlightedBy list)
-	this.isSelfHighlighted = function() {
+	NodeImplementation.prototype.isSelfHighlighted = function() {
 		for (var i = 0; i < this.highlightedBy.length; i++) {
 			if (this === this.highlightedBy[i]) {
 				return true;
@@ -657,7 +698,7 @@ function Node(name, type) {
 	};
 	// Returns the string that represents the node's current classes.
 	// Use D3 with this function to update classes if you want any highlighting changes to take effect
-	this.getClassString = function() {
+	NodeImplementation.prototype.getClassString = function() {
 		if (this.hoverHighlight !== null) {
 			return "node highlight hoverHighlight";
 		}
@@ -673,7 +714,9 @@ function Node(name, type) {
 			return "node";
 		}
 	};
-}
+
+	return NodeImplementation;
+})();
 
 // Function to update the visual display using the currently cached data and the current filter options
 function redisplay() {
@@ -812,6 +855,7 @@ function redisplay() {
 	force.force("compact").links(compactForceLinks);
 }
 
+// Update the graph's links with a new set of links
 function updateGraphLinks(links) {
 	// Add links to force simulation
 	force.force("link").links(links);
@@ -833,6 +877,7 @@ function updateGraphLinks(links) {
 		});
 }
 
+// Update the graph's nodes with a new set of nodes
 function updateGraphNodes(nodes) {
 	// Add nodes to force simulation
 	var forceGraphNodes = nodes.slice();
