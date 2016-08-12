@@ -32,12 +32,15 @@
 				<li class="sidebar-settings">
 					<h3>Human Genes</h3>
 					<div class="description">Type in a gene or multiple genes separated by commas to add them to the search</div>
-					<input type="text" id="geneSearchInput" value="TP73,T,PLOD1,LRP8,MCTP2,CHIA,TPSG1,IMP3">
+					<input type="text" id="geneSearchInput">
 					<div class="searchAutocomplete">
 						<div id="geneSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
 						</div>
 					</div>
+					<div class="description"><a href="javascript:;" class="geneExample" style="text-decoration: underline;" example="HLA-DRA,HLA-DOA,NLRC4">Try an example!</a></div>
+					<div style="height: 5px;"></div>
 					<div class="description">Currently displayed</div>
+					<div style="height: 5px;"></div>
 					<div class="buttonGroup">
 						<div id="geneSearchClearButton" class="button nontoggle">Clear</div>
 					</div>
@@ -50,6 +53,7 @@
 						</div>
 					</div>
 					<div class="description">Currently displayed</div>
+					<div style="height: 5px;"></div>
 					<div class="buttonGroup">
 						<div id="otuSearchClearButton" class="button nontoggle">Clear</div>
 					</div>
@@ -77,6 +81,26 @@
 					<div class="buttonGroup clearfix">
 						<div class="button half selected" id="newDataButton">New Data</div>
 						<div class="button half" id="oldDataButton">Old Data</div>
+					</div>
+					<h3>Save</h3>
+					<div class="description">
+						Freeze the graph to stop points from moving<br>
+						You can still drag points around<br>
+						Changing shown data, changing the size,<br>
+						or clicking the button again will unfreeze it
+					</div>
+					<div class="buttonGroup">
+						<div class="button nontoggle" id="freezeButton">Freeze Graph</div>
+					</div>
+					<div style="height: 5px;"></div>
+					<div class="description">
+						Save the current graph as an SVG file<br>
+						This will open in a new tab,<br>
+						press &#x2318;S (Mac) or Ctrl-S (PC) to save it
+					</div>
+					<div style="height: 5px;"></div>
+					<div class="buttonGroup">
+						<div class="button nontoggle" id="saveButton">Save Graph as Static Image</div>
 					</div>
 					<br><br>
 				</li>

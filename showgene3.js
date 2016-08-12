@@ -12,6 +12,10 @@ var genesSearched = [];
 var otusSearched = [];
 var searchableGenes = [];
 var searchableOtus = [];
+var frozen = false;
+var forceNames = ["charge", "link", "compact"];
+var centerForce;
+var forceStrengths = {};
 window.onload = function() {
 	loadSearchables();
 
@@ -24,7 +28,8 @@ window.onload = function() {
 	// The clientWidth of an SVG is 0 in Firefox.  Use the div around it instead.
 	var width = svg.node().parentElement.clientWidth;
 	var height = svg.node().parentElement.clientHeight;
-	force.force("center", d3.forceCenter(width / 2, height / 2));
+	centerForce = d3.forceCenter(width / 2, height / 2);
+	force.force("center", centerForce);
 	force.force("charge", d3.forceManyBody());
 	force.force("link", d3.forceLink().strength(function(link) {
 		return 1 / Math.min(link.target.links, link.source.links / 2, 4);
@@ -122,6 +127,16 @@ window.onload = function() {
 			$("#sidebarHideShowAltAnimate").attr("from", "M4 4 L11 20 L4 36").attr("to", "M11 4 L4 20 L11 36").get()[0].beginElement();
 			setTimeout(updateCenter, 500);
 		}
+	});
+	// Setup freeze button
+	$("#freezeButton").on("click", toggleFreeze);
+	// Setup save button
+	$("#saveButton").on("click", saveGraph);
+	// Setup examples
+	$(".geneExample").on("click", function() {
+		var exampleGenes = this.getAttribute("example").split(",").map(function(x) { return x.trim(); });
+		genesSearched = exampleGenes;
+		updateGenesSearchedList();
 	});
 	// Setup window resizing
 	window.onresize = updateCenter;
@@ -409,7 +424,7 @@ function updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchable
 		var autocompleteList = d3.select(autocompleteBox).selectAll(".button").data(matchedItems, function(name) { return name; });
 		autocompleteList.exit().remove();
 		autocompleteList.enter().append("div")
-			.attr("class", "button")
+			.attr("class", "button nontoggle")
 			.text(function(name) { return name; })
 			.on("click", function(name) {
 				itemsSearched.push(name);
@@ -424,6 +439,7 @@ function updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchable
 }
 
 function updateSize(size) {
+	unfreezeGraph();
 	force.alpha(Math.max(0.1, force.alpha())).restart();
 	force.force("charge").strength(-3 * size).distanceMax(4 * size);
 	force.force("link").distance(size);
@@ -434,7 +450,8 @@ function updateCenter() {
 	force.alpha(Math.max(0.1, force.alpha())).restart();
 	var width = svg.node().parentElement.clientWidth;
 	var height = svg.node().parentElement.clientHeight;
-	force.force("center", d3.forceCenter(width / 2, height / 2));
+	centerForce.x(width / 2);
+	centerForce.y(height / 2);
 }
 
 // Send a request for new data based on the current gene selection
@@ -449,6 +466,47 @@ function updateData() {
 	linkXmlHttp.open("GET", queryURL, true);
 	linkXmlHttp.send();
 	document.getElementById("loadIndicator").style.display = "initial";
+}
+
+function freezeGraph() {
+	if (frozen === false) {
+		frozen = true;
+		document.getElementById("freezeButton").innerHTML = "Unfreeze Graph";
+		forceNames.forEach(function(forceName) {
+			forceStrengths[forceName] = force.force(forceName).strength();
+			force.force(forceName).strength(0);
+		});
+		force.force("center", null);
+	}
+}
+
+function unfreezeGraph() {
+	if (frozen === true) {
+		force.alpha(Math.max(0.1, force.alpha())).restart();
+		frozen = false;
+		document.getElementById("freezeButton").innerHTML = "Freeze Graph";
+		forceNames.forEach(function(forceName) {
+			force.force(forceName).strength(forceStrengths[forceName]);
+		});
+		force.force("center", centerForce);
+	}
+}
+
+function toggleFreeze() {
+	if (frozen) {
+		unfreezeGraph();
+	}
+	else {
+		freezeGraph();
+	}
+}
+
+function saveGraph() {
+	var width = svg.node().parentElement.clientWidth;
+	var height = svg.node().parentElement.clientHeight;
+	var image = "<svg width=\"" + width + "px\" height=\"" + height + "px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">" + svg.node().innerHTML + "</svg>";
+	var imageURL = "data:image/svg+xml;base64," + btoa(image);
+	window.open(imageURL);
 }
 
 // Node class
@@ -545,6 +603,7 @@ function Node(name, type) {
 
 // Function to update the visual display using the currently cached data and the current filter options
 function redisplay() {
+	unfreezeGraph();
 	// Find Unique Nodes
 	var otus = {}; // Stores all the otu nodes
 	var genes = {}; // Stores all the gene nodes
