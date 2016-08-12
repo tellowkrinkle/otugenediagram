@@ -16,6 +16,8 @@ var frozen = false;
 var forceNames = ["charge", "link", "compact"];
 var centerForce;
 var forceStrengths = {};
+var displayedNodes = [];
+var hiddenNodes = [];
 window.onload = function() {
 	loadSearchables();
 
@@ -73,32 +75,42 @@ window.onload = function() {
 		updateBodySiteButtonDisplay();
 		redisplay();
 	});
+
+	function lockAutocomplete() {
+		this.setAttribute("locked", "true");
+	}
+	function unlockAutocomplete() {
+		this.setAttribute("locked", "false");
+	}
+
 	// Setup gene input
 	$("#geneSearchInput").on("change", updateGenesSearched);
 	$("#geneSearchInput").on("blur", updateGenesSearched);
-	$("#geneSearchAutocomplete").on("mousedown", function() {
-		$("#geneSearchAutocomplete").attr("locked", "true");
-	});
-	$("#geneSearchAutocomplete").on("mouseup", function() {
-		$("#geneSearchAutocomplete").attr("locked", "false");
-	});
+	$("#geneSearchAutocomplete").on("mousedown", lockAutocomplete);
+	$("#geneSearchAutocomplete").on("mouseup", unlockAutocomplete);
 	$("#geneSearchInput").on("input", updateGeneAutocomplete);
 	$("#geneSearchClearButton").on("click", function() {
 		genesSearched = [];
 		updateGenesSearchedList();
 	});
 	// Setup otu input
-	$("#otuSearchAutocomplete").on("mouseover", function() {
-		$("#otuSearchAutocomplete").attr("locked", "true");
-	});
-	$("#otuSearchAutocomplete").on("mouseout", function() {
-		$("#otuSearchAutocomplete").attr("locked", "false");
-	});
+	$("#otuSearchAutocomplete").on("mouseover", lockAutocomplete);
+	$("#otuSearchAutocomplete").on("mouseout", unlockAutocomplete);
 	$("#otuSearchInput").on("change", updateOtusSearched);
 	$("#otuSearchInput").on("blur", updateOtusSearched);
 	$("#otuSearchInput").on("input", updateOtuAutocomplete);
 	$("#otuSearchClearButton").on("click", function() {
 		otusSearched = [];
+		updateOtusSearchedList();
+	});
+	// Setup hidden node stuff
+	$("#hideSearchAutocomplete").on("mouseover", lockAutocomplete);
+	$("#hideSearchAutocomplete").on("mouseout", unlockAutocomplete);
+	$("#hideInput").on("change", updateHiddenPoints);
+	$("#hideInput").on("blur", updateHiddenPoints);
+	$("#hideInput").on("input", updateHiddenAutocomplete);
+	$("#hideSearchClearButton").on("click", function() {
+		hiddenNodes = [];
 		updateOtusSearchedList();
 	});
 	// Setup new data button
@@ -323,22 +335,33 @@ function updateGenesSearched() {
 	var searchBox = document.getElementById("geneSearchInput");
 	var d3Array = genesSearched;
 	var buttonContainer = d3.select("#genesSearched");
-	var updateFunction = updateGenesSearchedList;
-	var searchables = searchableGenes;
+	var listUpdateFunction = updateGenesSearchedList;
+	var dataUpdateFunction = updateData;
 	var autocompleteList = document.getElementById("geneSearchAutocomplete");
-	updateSearched(searchBox, d3Array, buttonContainer, updateFunction, autocompleteList);
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList);
 }
 
 function updateOtusSearched() {
 	var searchBox = document.getElementById("otuSearchInput");
 	var d3Array = otusSearched;
 	var buttonContainer = d3.select("#otusSearched");
-	var updateFunction = updateOtusSearchedList;
+	var listUpdateFunction = updateOtusSearchedList;
+	var dataUpdateFunction = updateData;
 	var autocompleteList = document.getElementById("otuSearchAutocomplete");
-	updateSearched(searchBox, d3Array, buttonContainer, updateFunction, autocompleteList);
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList);
 }
 
-function updateSearched(searchBox, d3Array, buttonContainer, updateFunction, autocompleteList) {
+function updateHiddenPoints() {
+	var searchBox = document.getElementById("hideInput");
+	var d3Array = hiddenNodes;
+	var buttonContainer = d3.select("#currentlyHidden");
+	var listUpdateFunction = updateHiddenPointsList;
+	var dataUpdateFunction = redisplay;
+	var autocompleteList = document.getElementById("hideSearchAutocomplete");
+	updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction, autocompleteList);
+}
+
+function updateSearched(searchBox, d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction,  autocompleteList) {
 	// Add any new genes
 	var newThingsToSearch = searchBox.value.split(",").map(function(x) { return x.trim(); });
 	// Don't input if they clicked an autocomplete (Not the best way of doing it, but I've got nothing better)
@@ -359,24 +382,34 @@ function updateSearched(searchBox, d3Array, buttonContainer, updateFunction, aut
 	});
 	searchBox.value = "";
 	autocompleteList.style.visibility = "hidden";
-	updateSearchedList(d3Array, buttonContainer, updateFunction);
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
 }
 
 function updateGenesSearchedList() {
 	var d3Array = genesSearched;
 	var buttonContainer = d3.select("#genesSearched");
-	var updateFunction = updateGenesSearchedList;
-	updateSearchedList(d3Array, buttonContainer, updateFunction);
+	var listUpdateFunction = updateGenesSearchedList;
+	var dataUpdateFunction = updateData;
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
 }
 
 function updateOtusSearchedList() {
 	var d3Array = otusSearched;
 	var buttonContainer = d3.select("#otusSearched");
-	var updateFunction = updateOtusSearchedList;
-	updateSearchedList(d3Array, buttonContainer, updateFunction);
+	var listUpdateFunction = updateOtusSearchedList;
+	var dataUpdateFunction = updateData;
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
 }
 
-function updateSearchedList(d3Array, buttonContainer, updateFunction) {
+function updateHiddenPointsList() {
+	var d3Array = hiddenNodes;
+	var buttonContainer = d3.select("#currentlyHidden");
+	var listUpdateFunction = updateHiddenPointsList;
+	var dataUpdateFunction = redisplay;
+	updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction);
+}
+
+function updateSearchedList(d3Array, buttonContainer, listUpdateFunction, dataUpdateFunction) {
 	var thingsSearchedDisplay = buttonContainer.selectAll(".button").data(d3Array, function(gene) { return gene; });
 	thingsSearchedDisplay.exit().remove();
 	thingsSearchedDisplay.enter().append("div")
@@ -389,9 +422,9 @@ function updateSearchedList(d3Array, buttonContainer, updateFunction) {
 					break;
 				}
 			}
-			updateFunction();
+			listUpdateFunction();
 		});
-	updateData();
+	dataUpdateFunction();
 }
 
 function updateGeneAutocomplete() {
@@ -409,6 +442,15 @@ function updateOtuAutocomplete() {
 	var itemsSearched = otusSearched;
 	var searchables = searchableOtus;
 	var updateFunction = updateOtusSearchedList;
+	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
+}
+
+function updateHiddenAutocomplete() {
+	var inputBox = document.getElementById("hideInput");
+	var autocompleteBox = document.getElementById("hideSearchAutocomplete");
+	var itemsSearched = hiddenNodes;
+	var searchables = displayedNodes;
+	var updateFunction = updateHiddenPointsList;
 	updateAutocomplete(inputBox, autocompleteBox, itemsSearched, searchables, updateFunction);
 }
 
@@ -657,13 +699,18 @@ function redisplay() {
 
 	var pValueCutoff = Math.pow(10, -1 * document.getElementById("pValueInput").value);
 
+	var lcHiddenNodes = hiddenNodes.map(function(x) { return x.toLowerCase(); });
+
 	var filteredResponses = response.filter(function(link) {
 		var bodySite = bodySiteInfo[link.site.toLowerCase()];
 		if (bodySite === undefined) {
 			bodySite = bodySiteInfo.other;
 		}
 		if (bodySite.selected) {
-			return link.pValue <= pValueCutoff;
+			if (link.pValue <= pValueCutoff) {
+				return lcHiddenNodes.indexOf(link.source.toLowerCase()) === -1 && lcHiddenNodes.indexOf(link.target.toLowerCase()) === -1;
+			}
+			return false;
 		}
 		else {
 			return false;
@@ -697,6 +744,8 @@ function redisplay() {
 			links.push(linkObject);
 		}
 	});
+
+	displayedNodes = nodes.map(function(node) { return node.name; });
 
 	currentSimGenes = genes;
 	currentSimOtus = otus;

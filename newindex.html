@@ -72,6 +72,19 @@
 					<h3>P-Value</h3>
 					<div class="description">Select a maximum P-Value (Currently <span id="pValueDisplay">10<sup> 0</sup></span>)</div>
 					<input type="range" min=0 max=8 step=0.1 value=0 id="pValueInput">
+					<h3>Hide Points</h3>
+					<div class="description">Type in a point name to hide it from the graph</div>
+					<input type="text" id="hideInput">
+					<div class="searchAutocomplete">
+						<div id="hideSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
+						</div>
+					</div>
+					<div class="description">Currently hidden</div>
+					<div style="height: 5px;"></div>
+					<div class="buttonGroup">
+						<div id="hideSearchClearButton" class="button nontoggle">Clear</div>
+					</div>
+					<div id="currentlyHidden" class="buttonGroup"></div>
 					<h3>Display Size</h3>
 					<div class="description">Adjust the size of the graph to fit your screen</div>
 					<input type="range" min=20 max=200 value=75 id="sizeInput">
