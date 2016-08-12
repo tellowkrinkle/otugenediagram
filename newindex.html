@@ -13,9 +13,9 @@
 
 		<div id="sidebarHideShow" style="line-height: 0px;">
 			<svg id="sidebarHideShowImage" style="height: 40px; width: 15px;">
-				<path id="sidebarHideShowArrow" d="M11 4 L4 20 L11 36" stroke="#444" stroke-width="3" fill="none" />
+				<path id="sidebarHideShowArrow" d="M11 4 L4 20 L11 36" stroke="#444" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" fill="none" />
 				<animate id="sidebarHideShowAnimate" xlink:href="#sidebarHideShowArrow" attributeName="d" attributeType="XML" from="M11 4 L4 20 L11 36" to="M11 4 L4 20 L11 36" dur="0.5s" fill="freeze"/>
-				<path id="sidebarHideShowAltArrow" d="M4 4 L11 20 L4 36" stroke="#444" stroke-width="3" fill="none" />
+				<path id="sidebarHideShowAltArrow" d="M4 4 L11 20 L4 36" stroke="#444" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" fill="none" />
 				<animate id="sidebarHideShowAltAnimate" xlink:href="#sidebarHideShowAltArrow" attributeName="d" attributeType="XML" from="M4 4 L11 20 L4 36" to="M4 4 L11 20 L4 36" dur="0.5s" fill="freeze"/>
 			</svg>
 		</div>
@@ -31,7 +31,7 @@
 				</li>
 				<li class="sidebar-settings">
 					<h3>Human Genes</h3>
-					<div class="description">Type in a gene or multiple genes separated by commas to add them to the search</div>
+					<div class="description" style="margin-bottom: 0px;">Type in a gene or multiple genes separated by commas to add them to the search</div>
 					<input type="text" id="geneSearchInput">
 					<div class="searchAutocomplete">
 						<div id="geneSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
@@ -46,14 +46,13 @@
 					</div>
 					<div id="genesSearched" class="buttonGroup"></div>
 					<h3>Microbiome Taxa</h3>
-					<div class="description">Type in a taxon or multiple taxa separated by commas to add them to the search</div>
+					<div class="description" style="margin-bottom: 0px;">Type in a taxon or multiple taxa separated by commas to add them to the search</div>
 					<input type="text" id="otuSearchInput">
 					<div class="searchAutocomplete">
 						<div id="otuSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
 						</div>
 					</div>
 					<div class="description">Currently displayed</div>
-					<div style="height: 5px;"></div>
 					<div class="buttonGroup">
 						<div id="otuSearchClearButton" class="button nontoggle">Clear</div>
 					</div>
@@ -61,7 +60,6 @@
 					<span id="bodySiteSelection" style="display: none;">
 						<h3>Body Site</h3>
 						<div class="description">Select one or more Subsites to view correlations from certain body areas</div>
-						<div style="height: 5px;"></div>
 						<div class="buttonGroup clearfix">
 							<div class="button half nontoggle" id="selectAllButton">Select All</div>
 							<div class="button half nontoggle" id="selectNoneButton">Select None</div>
@@ -72,15 +70,14 @@
 					<h3>P-Value</h3>
 					<div class="description">Select a maximum P-Value (Currently <span id="pValueDisplay">10<sup> 0</sup></span>)</div>
 					<input type="range" min=0 max=8 step=0.1 value=0 id="pValueInput">
-					<h3>Hide Points</h3>
-					<div class="description">Type in a point name to hide it from the graph</div>
+					<h3>Hide Nodes</h3>
+					<div class="description" style="margin-bottom: 0px;">Type in a node name to hide it from the graph</div>
 					<input type="text" id="hideInput">
 					<div class="searchAutocomplete">
 						<div id="hideSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
 						</div>
 					</div>
 					<div class="description">Currently hidden</div>
-					<div style="height: 5px;"></div>
 					<div class="buttonGroup">
 						<div id="hideSearchClearButton" class="button nontoggle">Clear</div>
 					</div>
@@ -90,7 +87,6 @@
 					<input type="range" min=20 max=200 value=75 id="sizeInput">
 					<h3>Dataset</h3>
 					<div class="description">Select which data to use</div>
-					<div style="height: 5px;"></div>
 					<div class="buttonGroup clearfix">
 						<div class="button half selected" id="newDataButton">New Data</div>
 						<div class="button half" id="oldDataButton">Old Data</div>
@@ -111,7 +107,6 @@
 						This will open in a new tab,<br>
 						press &#x2318;S (Mac) or Ctrl-S (PC) to save it
 					</div>
-					<div style="height: 5px;"></div>
 					<div class="buttonGroup">
 						<div class="button nontoggle" id="saveButton">Save Graph as Static Image</div>
 					</div>
