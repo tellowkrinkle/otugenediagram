@@ -111,7 +111,7 @@ window.onload = function() {
 	$("#hideInput").on("input", updateHiddenAutocomplete);
 	$("#hideSearchClearButton").on("click", function() {
 		hiddenNodes = [];
-		updateOtusSearchedList();
+		updateHiddenPointsList();
 	});
 	// Setup new data button
 	$("#newDataButton").on("click", function() {
