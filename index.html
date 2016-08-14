@@ -1,257 +1,195 @@
-<!--<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  -->
-<html >
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<script type="text/javascript" src="d3.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script type="text/javascript" src="showgene2.js"></script>
-
-<style>
-body{
-background-color: black;
-}
-
-#header {
- width: 700px ;
- margin-left: auto ;
- margin-right: auto ;
-  }
-#sidebar {
- float: right;
- }
- 
-#buttons {
- position: fixed;
-    top: 300px;
-    right: 250px;
- }
- 
-#svgdataurl { 
- width: 840px ;
- margin-left: auto ;
- margin-right: auto ;
- }
- h2 {
- color: #fff;
- position: absolute;
-	left: 350px;
-	top: -10px;
- }
-
- img {
- border-style: ridge;
- border-color: #fff;
- }
-</style>
-<script type="text/javascript">
-
-</script>
+	<meta charset="utf-8">
+	<title>OTU Gene Diagram</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="OTU Gene Diagram">
+	<meta name="author" content="">
+	<link rel="stylesheet" href="libraries/css/simple-sidebar.css">
 </head>
- 
 <body>
+	<div id="wrapper">
 
+		<div id="sidebarHideShow" style="line-height: 0px;">
+			<svg id="sidebarHideShowImage" style="height: 40px; width: 15px;">
+				<path id="sidebarHideShowArrow" d="M11 4 L4 20 L11 36" stroke="#444" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" fill="none" />
+				<animate id="sidebarHideShowAnimate" xlink:href="#sidebarHideShowArrow" attributeName="d" attributeType="XML" from="M11 4 L4 20 L11 36" to="M11 4 L4 20 L11 36" dur="0.5s" fill="freeze"/>
+				<path id="sidebarHideShowAltArrow" d="M4 4 L11 20 L4 36" stroke="#444" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" fill="none" />
+				<animate id="sidebarHideShowAltAnimate" xlink:href="#sidebarHideShowAltArrow" attributeName="d" attributeType="XML" from="M4 4 L11 20 L4 36" to="M4 4 L11 20 L4 36" dur="0.5s" fill="freeze"/>
+			</svg>
+		</div>
 
-			
-				<!----- Search functionality  ----->				
-				
-				
-				<div id="header">
-				<br><br><br><br><br><br><br><br>
-				<input type="text" size="50" name="gene" value="Search" id="gene" autocomplete="off" onkeyup="geneKeyUp(event)" onkeypress="geneKeyUp(event)" />
-				<select name="subsite" id="subsite" >
-					<option value="'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'">Any Body Site</option>
-					<option value="'anterior_nares'">Anterior Nares</option>
-					<option value="'attached_keratinized_gingiva'">Attached Keratinized Gingiva</option>
-					<option value="'buccal_mucosa'">Buccal Mucosa</option>
-					<option value="'hard_palate'">Hard Palate</option>
-					<option value="'left_antecubital_fossa'">Left Antecubital Fossa</option>
-					<option value="'left_retroauricular_crease'">Left Retroauricular Crease</option>
-					<option value="'Palatine_Tonsils'">Palatine Tonsils</option>
-					<option value="'right_antecubital_fossa'">Right Antecubital Fossa</option>
-					<option value="'right_retroauricular_crease'">Right Retroauricular Crease</option>
-					<option value="'saliva'">Saliva</option>
-					<option value="'stool'">Stool</option>
-					<option value="'subgingival_plaque'">Subgingival Plaque</option>
-					<option value="'supragingival_plaque'">Supragingival Plaque</option>
-					<option value="'Throat'">Throat</option>
-					<option value="'tongue_dorsum'">Tongue Dorsum</option></select>
-				<select name="P-value" id="P-value">
-					<option value=".0001">&#60 1x10<sup>-4</sup></option> 
-					<option value=".00001">&#60 1x10<sup>-5</sup></option> 
-					<option value=".000001">&#60 1x10<sup>-6</sup></option></select> 		
-				<input type="button" name="search" value="Search" onclick="showGene('')" />		
-				</div>
-				<div id="sidebar" style="display:none">
-		<br><br><br>
-				<h3 style="color:#fff;font-family:sans-serif;">Gene Search</h3>
-				<input type="text" size="50" name="gene" value="Search" id="gene2" autocomplete="off"  onkeyup="geneKeyUp2(event)" onkeypress="geneKeyUp2(event)" /> <br>
-				<div id="subsite2" class="subsite2"><h3 style="color:#fff;font-family:sans-serif;">Body Site</h3>
-				<table>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#fff"><input name="subsite2[]" type="checkbox" selected="selected" value="'anterior_nares','attached_keratinized_gingiva','buccal_mucosa','hard_palate','left_antecubital_fossa','left_retroauricular_crease','Palatine_Tonsils','right_antecubital_fossa','right_retroauricular_crease','saliva','stool','subgingival_plaque','supragingival_plaque','Throat','tongue_dorsum'">All Body Sites</option>
-					<td style="font-size:14px;font-family:sans-serif;color:#71c9AC"><input name="subsite2[]" type="checkbox" value="'anterior_nares'">Anterior Nares</input></td></tr>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#FE8D5C"><input name="subsite2[]" type="checkbox"  value="'attached_keratinized_gingiva'">Attached Keratinized Gingiva</input></td>
-					<td style="font-size:14px;font-family:sans-serif;color:#8C9FCD"><input name="subsite2[]" type="checkbox"  value="'buccal_mucosa'">Buccal Mucosa</input></td></tr>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#F5C9E4"><input name="subsite2[]" type="checkbox"  value="'hard_palate'">Hard Palate</input></td>
-					<td style="font-size:14px;font-family:sans-serif;color:#A5DA4A"><input name="subsite2[]" type="checkbox"  value="'left_antecubital_fossa'">Left Antecubital Fossa</input></td></tr>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#E6C591"><input name="subsite2[]" type="checkbox"  value="'left_retroauricular_crease'">Left Retroauricular Crease</input></td>
-					<td style="font-size:14px;font-family:sans-serif;color:#B3B3B3"><input name="subsite2[]" type="checkbox"  value="'Palatine_Tonsils'">Palatine Tonsils</input></td></tr>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#B1E086"><input name="subsite2[]" type="checkbox"  value="'right_retroauricular_crease'">Right Retroauricular Crease</input></td>
-					<td style="font-size:14px;font-family:sans-serif;color:#A5CEE4"><input name="subsite2[]" type="checkbox"  value="'right_antecubital_fossa'">Right Antecubital Fossa</input></td></tr>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#F681C2"><input name="subsite2[]" type="checkbox"  value="'saliva'">Saliva</input></td>
-					<td style="font-size:14px;font-family:sans-serif;color:#FEC068"><input name="subsite2[]" type="checkbox"  value="'stool'">Stool</input></td></tr>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#CAB1D7"><input name="subsite2[]" type="checkbox"  value="'subgingival_plaque'">Subgingival Plaque</input></td>
-					<td style="font-size:14px;font-family:sans-serif;color:#B3591F"><input name="subsite2[]" type="checkbox"  value="'supragingival_plaque'">Supragingival Plaque</input></td></tr>
-					<tr><td style="font-size:14px;font-family:sans-serif;color:#BA55D3"><input name="subsite2[]" type="checkbox"  value="'Throat'">Throat</input></td>
-					<td style="font-size:14px;font-family:sans-serif;color:#1F792A"><input name="subsite2[]" type="checkbox"  value="'tongue_dorsum'">Tongue Dorsum</input></td></tr></table></div>
-				<h3 style="color:#fff;font-family:sans-serif;">P-Value</h3>
-				<select name="P-value2" id="P-value2">
-					<option value=".0001">&#60 1x10<sup>-4</sup></option> 
-					<option value=".00001">&#60 1x10<sup>-5</sup></option> 
-					<option value=".000001">&#60 1x10<sup>-6</sup></option></select> 	
-				<br><br>	
-				<input type="button" name="search" value="Refresh Graph" onclick="showGene3('')" />		
-				<input type="button" value="Preview Static Image" id="save" name="save" />
-				</div>
-				
-<div id="autosuggest_results"></div>
+		<!-- Settings and Navigation -->
+		<div id="sidebar-wrapper">
+			<ul class="sidebar-nav">
+				<li class="sidebar-brand">
+					OTU Gene Diagram
+				</li>
+				<li>
+					<div id="aboutDescription" class="about">Network visualization of associations between human genes and microbiome taxa. Designed by <a href="blekhmanlab.org">The Blekhman Lab</a> at the University of Minnesota. Contact us at <a href="mailto:blekhman@umn.edu">blekhman@umn.edu</a>.</div>
+				</li>
+				<li class="sidebar-settings">
+					<!-- Human Gene Selection -->
+					<h3>Human Genes</h3>
+					<div class="description" style="margin-bottom: 0px;">Type in a gene or multiple genes separated by commas to add them to the search</div>
+					<input type="text" id="geneSearchInput">
+					<div class="searchAutocomplete">
+						<div id="geneSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
+						</div>
+					</div>
+					<div class="description"><a href="javascript:;" class="geneExample" style="text-decoration: underline;" example="HLA-DRA,HLA-DOA,NLRC4">Try an example!</a></div>
+					<div style="height: 5px;"></div>
+					<div class="description">Currently displayed</div>
+					<div style="height: 5px;"></div>
+					<div class="buttonGroup">
+						<div id="geneSearchClearButton" class="button nontoggle">No genes searched</div>
+					</div>
+					<div id="genesSearched" class="buttonGroup"></div>
+					<!-- Microbiome Taxa Selection -->
+					<h3>Microbiome Taxa</h3>
+					<div class="description" style="margin-bottom: 0px;">Type in a taxon or multiple taxa separated by commas to add them to the search</div>
+					<input type="text" id="otuSearchInput">
+					<div class="searchAutocomplete">
+						<div id="otuSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
+						</div>
+					</div>
+					<div class="description">Currently displayed</div>
+					<div class="buttonGroup">
+						<div id="otuSearchClearButton" class="button nontoggle">No taxa searched</div>
+					</div>
+					<div id="otusSearched" class="buttonGroup"></div>
+					<!-- Body Site Selection -->
+					<span id="bodySiteSelection" style="display: none;">
+						<h3>Body Site</h3>
+						<div class="description">Select one or more Subsites to view correlations from certain body areas</div>
+						<div class="buttonGroup clearfix">
+							<div class="button half nontoggle" id="selectAllButton">Select All</div>
+							<div class="button half nontoggle" id="selectNoneButton">Select None</div>
+						</div>
+						<div id="bodySiteButtons" class="buttonGroup">
+						</div>
+					</span>
+					<!-- P Value Slider (Currently Disabled)-->
+					<!--
+					<h3>P-Value</h3>
+					<div class="description">Select a maximum P-Value (Currently <span id="pValueDisplay">10<sup> 0</sup></span>)</div>
+					<input type="range" min=0 max=8 step=0.1 value=0 id="pValueInput">
+					-->
+					<!-- Node Hiding -->
+					<h3>Hide Nodes</h3>
+					<div class="description" style="margin-bottom: 0px;">Type in a node name to hide it from the graph</div>
+					<input type="text" id="hideInput">
+					<div class="searchAutocomplete">
+						<div id="hideSearchAutocomplete" class="buttonGroup" style="visibility: hidden">
+						</div>
+					</div>
+					<div class="description">Currently hidden</div>
+					<div class="buttonGroup">
+						<div id="hideSearchClearButton" class="button nontoggle">No nodes hidden</div>
+					</div>
+					<div id="currentlyHidden" class="buttonGroup"></div>
+					<!-- Display Size Slider -->
+					<h3>Display Size</h3>
+					<div class="description">Adjust the size of the graph to fit your screen</div>
+					<input type="range" min=20 max=200 value=75 id="sizeInput">
+					<!-- Dataset Selction (Currently Disabled)-->
+					<!--
+					<h3>Dataset</h3>
+					<div class="description">Select which data to use</div>
+					<div class="buttonGroup clearfix">
+						<div class="button half selected" id="newDataButton">New Data</div>
+						<div class="button half" id="oldDataButton">Old Data</div>
+					</div>
+					-->
+					<!-- Freeze and Save Buttons -->
+					<h3>Save</h3>
+					<div class="description">
+						Freeze the graph to stop points from moving<br>
+						You can still drag points around<br>
+						Changing shown data, changing the size,<br>
+						or clicking the button again will unfreeze it
+					</div>
+					<div class="buttonGroup">
+						<div class="button nontoggle" id="freezeButton">Freeze Graph</div>
+					</div>
+					<div style="height: 5px;"></div>
+					<div class="description">
+						Save the current graph as an SVG file<br>
+						This will open in a new tab,<br>
+						press &#x2318;S (Mac) or Ctrl-S (PC) to save it
+					</div>
+					<div class="buttonGroup">
+						<div class="button nontoggle" id="saveButton">Save Graph as Static Image</div>
+					</div>
+					<br><br>
+				</li>
+			</ul>
+		</div>
 
-				
-	<div id="salvation"><svg id="chart" height="580" width="860" style="background-color:black;display:none" ><style>
-path.link {
-  fill: none;
-  stroke: #666;
-  stroke-width: 2.5px;
-}
+		<!-- Actual Graph -->
+		<div id="page-content-wrapper" style="position: relative">
+			<div id="loadIndicator" style="display: none; position: absolute; top: 30px; left: 30px; z-index: 2; background: #ddd; border-radius: 5px; padding: 5px;">Loading...</div>
+			<div id="graphContainer" style="height: 100%; border: 1px solid #888; padding: 0px; line-height: 0px; border-radius: 5px;">
+				<svg id="graph" style="width: 100%; height: 100%;">
+					<style type="text/css"><![CDATA[
+					.link {
+						stroke: #aaa;
+						stroke-width: 1.5px;
+					}
+					.node circle {
+						stroke: #fff;
+						stroke-width: 1.5px;
+					}
+					.node text {
+						fill: #666;
+						font: 9px sans-serif;
+						pointer-events: none;
+						font-weight: bold;
+					}
+					.node.highlight text {
+						fill: #000;
+						font: 10px sans-serif;
+						font-weight: bold;
+					}
+					.node.highlight circle {
+						stroke: #000;
+					}
+					.node.hoverHighlight text {
+						fill: #048;
+						font: 11px sans-serif;
+						font-weight: bold;
+					}
+					.node.hoverHighlight circle {
+						stroke: #048;
+					}
+					.node.selfHighlight text {
+						fill: #226;
+					}
+					.node.selfHighlight circle {
+						stroke: #226;
+					}
+					]]></style>
+				</svg>
+			</div>
+		</div>
+	</div>
 
-circle {
- <!--  fill: #ccc; -->
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
+	<!-- Scripts -->
+	<!-- Old IE HTML5 Shim -->
+	<!--[if lt IE 9]>
+	  <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<!-- jQuery CDN -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<!-- jQuery local fallback -->
+	<script>window.jQuery || document.write('<script src="libraries/js/jquery-2.2.4.min.js"><\/script>'); // jshint ignore:line</script>
+	<!-- D3 CDN -->
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<!-- D3 local fallback -->
+	<script>window.d3 || document.write('<script src="libraries/js/d3.v4.1.1.min.js"><\/script>'); // jshint ignore:line</script>
 
-text {
-  fill: #ccc;
-  font: 10px sans-serif;
-  pointer-events: none;
-  font-weight: bold;
-}
-
-#Anterior_nares {
-  fill: #71c9AC;
-}
-
-.link.Anterior_nares {
-  stroke: #71c9AC;
-}
-#Attached_Keratinized_gingiva {
-  fill: #FE8D5C;
-}
-
-.link.Attached_Keratinized_gingiva {
-  stroke: #FE8D5C;
-}
-#Buccal_mucosa {
-  fill: #8C9FCD;
-}
-
-.link.Buccal_mucosa {
-  stroke: #8C9FCD;
-}
-#Hard_palate {
-  fill: #F5C9E4;
-}
-
-.link.Hard_palate {
-  stroke: #F5C9E4;
-}
-#Left_Antecubital_fossa {
-  fill: #A5DA4A;
-}
-
-.link.Left_Antecubital_fossa {
-  stroke: #A5DA4A;
-}
-#Left_Retroauricular_crease {
-  fill: #E6C591;
-}
-
-.link.Left_Retroauricular_crease  {
-  stroke: #E6C591;
-}
-#Palatine_Tonsils {
-  fill: #B3B3B3;
-}
-
-.link.Palatine_Tonsils {
-  stroke: #B3B3B3;
-}
-#Right_Antecubital_fossa {
-  fill: #A5CEE4;
-}
-
-.link.Right_Antecubital_fossa {
-  stroke:  #A5CEE4;
-}
-
-#Right_Retroauricular_crease {
-  fill: #B1E086;
-}
-
-.link.Right_Retroauricular_crease {
-  stroke: #B1E086;
-}
-#Saliva{
-  fill: #F681C2;
-}
-
-.link.Saliva {
-  stroke: #F681C2;
-}
-#Stool {
-  fill: #FEC068;
-}
-
-.link.Stool {
-  stroke: #FEC068;
-}
-
-#Subgingival_plaque {
-  fill: #CAB1D7;
-}
-
-.link.Subgingival_plaque {
-  stroke: #CAB1D7;
-}
-
-#Supragingival_plaque {
-  fill: #B3591F;
-}
-
-.link.Supragingival_plaque {
-  stroke: #B3591F;
-}
-
-#Throat{
-  fill: #BA55D3;
-}
-
-.link.Throat {
-  stroke: #BA55D3;
-}
-
-#Tongue_dorsum {
-  fill: #1F792A;
-}
-
-.link.Tongue_dorsum {
-  stroke: #1F792A;
-}
-
-ul {
-	list-style-type: none;
-}</style></svg></div>
-	<div id="svgdataurl" ></div>
-	<div id="buttons" style="display:none"></div>
-	
+	<!-- Main Script -->
+	<script src="showgene3.js"></script>
 </body>
 </html>
